@@ -80,29 +80,34 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1">
-        <section className="w-full py-20 md:py-28 lg:py-36 bg-muted/30 border-b">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-6 text-center">
-              <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none font-headline text-foreground">
+        {/* Hero Section */}
+        <section className="relative w-full py-24 md:py-32 lg:py-40 overflow-hidden bg-background">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/10 -z-10" />
+          <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[100px] -z-10 animate-pulse" />
+          <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[100px] -z-10" />
+          
+          <div className="container px-4 md:px-6 relative z-10">
+            <div className="flex flex-col items-center justify-center space-y-8 text-center">
+              <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none font-headline text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
                 Find What You've Lost
               </h1>
-              <p className="max-w-[700px] text-muted-foreground md:text-xl">
+              <p className="max-w-[700px] text-muted-foreground md:text-xl font-light">
                 Our community-powered platform helps you reconnect with your
                 lost items and report found ones with ease. Let's bring things
                 back together.
               </p>
-              <div className="w-full max-w-xl space-y-4 pt-6">
+              <div className="w-full max-w-xl space-y-4 pt-8">
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                   <Button
                     asChild
                     size="lg"
-                    className="bg-[#3b82f6] hover:bg-[#3b82f6]/90"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 rounded-full px-8 text-md font-medium"
                   >
                     <Link to="/feed">Browse Lost & Found</Link>
                   </Button>
-                  <Button variant="secondary" asChild size="lg">
+                  <Button variant="outline" asChild size="lg" className="rounded-full px-8 text-md font-medium border-primary/20 hover:border-primary/50 hover:bg-primary/5 transition-all hover:-translate-y-1">
                     <Link to="/create">
-                      <PlusCircle className="mr-2 h-4 w-4" />
+                      <PlusCircle className="mr-2 h-5 w-5" />
                       Report an Item
                     </Link>
                   </Button>
@@ -128,46 +133,49 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-start gap-12 py-12 lg:grid-cols-3">
-              <div className="grid gap-4 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                  <FilePlus2 className="h-8 w-8 text-primary" />
+            <div className="mx-auto grid max-w-5xl items-start gap-8 py-16 lg:grid-cols-3">
+              <div className="glass-card grid gap-4 text-center p-8 rounded-2xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 group-hover:scale-110 transition-transform duration-300">
+                  <FilePlus2 className="h-8 w-8" />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3 relative z-10">
                   <h3 className="text-xl font-bold font-headline">
                     1. Create a Post
                   </h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     Quickly create a detailed post for your lost or found item.
                     Add photos, a description, location, and date to help others
                     identify it.
                   </p>
                 </div>
               </div>
-              <div className="grid gap-4 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                  <MessageCircle className="h-8 w-8 text-primary" />
+              <div className="glass-card grid gap-4 text-center p-8 rounded-2xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 group-hover:scale-110 transition-transform duration-300">
+                  <MessageCircle className="h-8 w-8" />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3 relative z-10">
                   <h3 className="text-xl font-bold font-headline">
                     2. Connect & Verify
                   </h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     Communicate safely through our secure messaging system.
                     Users can send contact requests to verify ownership before
                     meeting.
                   </p>
                 </div>
               </div>
-              <div className="grid gap-4 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                  <Handshake className="h-8 w-8 text-primary" />
+              <div className="glass-card grid gap-4 text-center p-8 rounded-2xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 group-hover:scale-110 transition-transform duration-300">
+                  <Handshake className="h-8 w-8" />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3 relative z-10">
                   <h3 className="text-xl font-bold font-headline">
                     3. Reunite
                   </h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     Coordinate a safe meetup to return the item to its rightful
                     owner. Mark the item as "Reunited" to celebrate the success!
                   </p>
@@ -177,7 +185,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="w-full py-16 md:py-24 lg:py-28 bg-muted/30">
+        <section className="w-full py-20 md:py-28 lg:py-32 bg-secondary/20 relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">
@@ -210,10 +219,10 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-start gap-8 py-12 lg:grid-cols-3 lg:gap-12">
+            <div className="mx-auto grid max-w-5xl items-start gap-8 py-16 lg:grid-cols-3 lg:gap-8">
               {testimonials.map((testimonial, index) => (
-                <Card key={index} className="shadow-lg">
-                  <CardContent className="p-6 space-y-4">
+                <Card key={index} className="glass-card border-none rounded-2xl">
+                  <CardContent className="p-8 space-y-6">
                     <div className="flex gap-1 text-primary">
                       <Star className="w-5 h-5 fill-current" />
                       <Star className="w-5 h-5 fill-current" />

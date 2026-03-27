@@ -205,7 +205,7 @@ export default function ConnectionNotifications() {
           {allNotifications.length > 0 && (
             <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
               <span className="absolute h-full w-full rounded-full bg-primary animate-ping opacity-75" />
-              <span className="relative h-2 w-2 rounded-full bg-[#3b82f6]" />
+              <span className="relative h-2 w-2 rounded-full bg-destructive" />
             </span>
           )}
         </Button>

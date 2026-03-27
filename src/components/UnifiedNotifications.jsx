@@ -199,31 +199,31 @@ export default function UnifiedNotifications() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative hover:bg-primary/10 transition-colors rounded-full">
           <Bell className="h-5 w-5" />
           {allNotifications.length > 0 && (
-            <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
-              <span className="absolute h-full w-full rounded-full bg-primary animate-ping opacity-75" />
-              <span className="relative h-2 w-2 rounded-full bg-[#3b82f6]" />
+            <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+              <span className="absolute h-full w-full rounded-full bg-destructive animate-ping opacity-75" />
+              <span className="relative h-2 w-2 rounded-full bg-destructive" />
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-96 max-h-[500px] overflow-y-auto"
+        className="w-96 max-h-[500px] overflow-y-auto rounded-xl border-border shadow-lg"
         align="end"
       >
-        <DropdownMenuLabel className="flex justify-between items-center">
-          <span>Notifications</span>
-          <Badge variant="secondary">{allNotifications.length}</Badge>
+        <DropdownMenuLabel className="flex justify-between items-center px-4 py-3">
+          <span className="font-headline font-semibold">Notifications</span>
+          <Badge variant="secondary" className="rounded-full text-xs">{allNotifications.length}</Badge>
         </DropdownMenuLabel>
 
         <DropdownMenuSeparator />
 
         {/* PENDING REQUESTS */}
         {pendingRequests.map((req) => (
-          <div key={req._id} className="px-2 py-3 hover:bg-muted/50 rounded-md">
+          <div key={req._id} className="px-3 py-3 hover:bg-muted/50 rounded-lg transition-colors">
             <div className="flex items-start gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage
@@ -249,7 +249,7 @@ export default function UnifiedNotifications() {
                   <Button
                     size="sm"
                     onClick={(e) => handleAcceptRequest(req.requesterId._id, e)}
-                    className="h-7 text-xs bg-blue-600 hover:bg-blue-700"
+                    className="h-7 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
                   >
                     <CheckIcon className="w-3 h-3 mr-1" />
                     Accept
@@ -258,7 +258,7 @@ export default function UnifiedNotifications() {
                     size="sm"
                     variant="outline"
                     onClick={(e) => handleRejectRequest(req.requesterId._id, e)}
-                    className="h-7 text-xs"
+                    className="h-7 text-xs rounded-full"
                   >
                     <X className="w-3 h-3 mr-1" />
                     Reject
@@ -273,7 +273,7 @@ export default function UnifiedNotifications() {
         {visibleAccepted.map((notif) => (
           <div
             key={notif._id}
-            className="px-2 py-3 hover:bg-muted/50 rounded-md"
+            className="px-3 py-3 hover:bg-muted/50 rounded-lg transition-colors"
           >
             <div className="flex items-start gap-3">
               <Avatar className="h-10 w-10">
@@ -297,7 +297,7 @@ export default function UnifiedNotifications() {
                 </p>
 
                 <div className="flex gap-2">
-                  <Button size="sm" asChild className="h-7 text-xs bg-blue-600">
+                  <Button size="sm" asChild className="h-7 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
                     <Link to={`/chat/${notif.otherUser?._id}`}>
                       <MessageSquare className="w-3 h-3 mr-1" /> Message
                     </Link>
@@ -306,7 +306,7 @@ export default function UnifiedNotifications() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-7 text-xs"
+                    className="h-7 text-xs rounded-full"
                     onClick={(e) => handleDismiss(notif._id, e)}
                   >
                     Dismiss
@@ -321,7 +321,7 @@ export default function UnifiedNotifications() {
         {visibleComments.map((comment) => (
           <div
             key={comment._id}
-            className="px-2 py-3 hover:bg-muted/50 rounded-md"
+            className="px-3 py-3 hover:bg-muted/50 rounded-lg transition-colors"
           >
             <div className="flex items-start gap-3">
               <Avatar className="h-10 w-10">
@@ -342,14 +342,14 @@ export default function UnifiedNotifications() {
                 </p>
 
                 <div className="flex gap-2">
-                  <Button size="sm" asChild className="h-7 text-xs bg-blue-600">
+                  <Button size="sm" asChild className="h-7 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
                     <Link to={`/feed/${comment.postId._id}`}>View Post</Link>
                   </Button>
 
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-7 text-xs"
+                    className="h-7 text-xs rounded-full"
                     onClick={(e) => handleDismiss(comment._id, e)}
                   >
                     <X className="w-3 h-3 mr-1" />

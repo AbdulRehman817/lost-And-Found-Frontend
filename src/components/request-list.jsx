@@ -66,7 +66,7 @@ export default function RequestsList() {
       {/* Header Section */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-[#3b82f6] rounded-lg">
+          <div className="p-2 bg-primary rounded-xl">
             <Users className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -82,7 +82,7 @@ export default function RequestsList() {
       {/* Connections List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#3b82f6] border-t-transparent"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent"></div>
         </div>
       ) : acceptedRequests.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg bg-card">
@@ -99,12 +99,12 @@ export default function RequestsList() {
           {acceptedRequests.map((req) => (
             <div
               key={req._id}
-              className="bg-card border rounded-lg p-4 hover:border-[#3b82f6]/50 transition-all duration-200 shadow-sm hover:shadow-md"
+              className="bg-card border rounded-xl p-4 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md"
             >
               <div className="flex items-start gap-4">
                 {/* Avatar */}
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3b82f6] to-[#2563eb] flex items-center justify-center text-white font-semibold shadow-md">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
                     {(req.requesterId?.name || "U")[0].toUpperCase()}
                   </div>
                 </div>

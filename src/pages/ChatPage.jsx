@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 import { io } from "socket.io-client";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, MessageCircle } from "lucide-react";
 import { Header } from "../components/Header";
 
 export default function ChatPage() {
@@ -64,6 +64,10 @@ export default function ChatPage() {
         socketRef.current.on("user-status", ({ userId, isOnline }) => {
           setUsers((prev) =>
             prev.map((u) => (u._id === userId ? { ...u, isOnline } : u))
+          );
+          // Fix: Ensure the real-time status updates the currently selected user as well
+          setSelected((prev) => 
+            prev && prev._id === userId ? { ...prev, isOnline } : prev
           );
         });
 
@@ -152,22 +156,22 @@ export default function ChatPage() {
       {!loading ? (
         <div className="flex flex-col h-screen w-full">
           <Header />
-          <div className="flex h-screen w-full bg-[#0b141a] text-white">
+          <div className="flex flex-1 overflow-hidden bg-background text-foreground">
             {/* Sidebar */}
             <div
-              className={`md:flex flex-col w-full md:w-1/4 bg-[#202c33] border-r p-2 ${
+              className={`md:flex flex-col w-full md:w-80 lg:w-96 bg-card border-r border-border ${
                 selected ? "hidden md:flex" : "flex"
               }`}
             >
-              <div className="p-4 font-bold border-b">Chats</div>
+              <div className="p-4 font-bold border-b border-border bg-muted/30 font-headline text-lg">Messages</div>
 
               {users.length ? (
                 users.map((u) => (
                   <div
                     key={u._id}
                     onClick={() => openChat(u)}
-                    className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-[#2a3942] ${
-                      selected?._id === u._id ? "bg-[#2a3942]" : ""
+                    className={`flex items-center gap-4 p-4 cursor-pointer transition-colors hover:bg-muted/50 border-b border-border/50 ${
+                      selected?._id === u._id ? "bg-muted" : ""
                     }`}
                   >
                     <img
@@ -179,7 +183,7 @@ export default function ChatPage() {
                   </div>
                 ))
               ) : (
-                <p className="p-4 text-gray-400">No connected users</p>
+                <p className="p-8 text-center text-muted-foreground text-sm">No connected users</p>
               )}
             </div>
 
@@ -192,7 +196,7 @@ export default function ChatPage() {
               {selected ? (
                 <>
                   {/* Header */}
-                  <div className="flex items-center gap-3 p-4 border-b bg-[#202c33]">
+                  <div className="flex items-center gap-4 p-4 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-10">
                     <button
                       className="md:hidden"
                       onClick={() => setSelected(null)}
@@ -205,12 +209,13 @@ export default function ChatPage() {
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
-                      <div className="font-semibold">{selected.name}</div>
+                      <div className="font-semibold font-headline">{selected.name}</div>
                       <div
-                        className={`text-sm ${
-                          selected.isOnline ? "text-green-400" : "text-gray-400"
+                        className={`text-xs font-medium ${
+                          selected.isOnline ? "text-green-500 flex items-center gap-1" : "text-muted-foreground"
                         }`}
                       >
+                        {selected.isOnline && <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>}
                         {selected.isOnline ? "Online" : "Offline"}
                       </div>
                     </div>
@@ -219,70 +224,74 @@ export default function ChatPage() {
                   {/* Messages */}
                   <div
                     ref={scrollRef}
-                    className="flex-1 p-4 overflow-auto flex flex-col gap-3 bg-[#111b21]"
+                    className="flex-1 p-4 overflow-x-hidden overflow-y-auto flex flex-col gap-4 bg-secondary/10"
                   >
                     {loadingMessages ? (
                       <div className="flex items-center justify-center flex-1">
-                        <Loader2 className="w-6 h-6 text-[#00a884] animate-spin" />
+                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
                       </div>
                     ) : msgs.length ? (
                       msgs.map((m, i) => (
                         <div
                           key={i}
-                          className={`max-w-xs p-2 rounded-2xl ${
+                          className={`max-w-[75%] p-3 rounded-2xl shadow-sm ${
                             m.senderId === meId
-                              ? "self-end bg-[#005c4b]"
-                              : "self-start bg-[#202c33]"
+                              ? "self-end bg-primary text-primary-foreground rounded-tr-sm"
+                              : "self-start bg-card border border-border text-foreground rounded-tl-sm"
                           }`}
                         >
-                          <div>{m.message}</div>
-                          <div className="text-xs text-gray-400 text-right mt-1">
+                          <div className="leading-relaxed text-sm">{m.message}</div>
+                          <div className={`text-[10px] text-right mt-1.5 ${m.senderId === meId ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                             {formatTime(m.createdAt)}
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="text-gray-500 text-center">
-                        No messages
+                      <div className="text-muted-foreground text-center text-sm my-auto">
+                        No messages yet
                       </div>
                     )}
                   </div>
 
                   {/* Typing */}
                   {typingUserId === selected._id && (
-                    <div className="px-4 py-1 bg-red-600 text-sm text-gray-300 italic">
+                    <div className="px-6 py-2 bg-secondary/10 text-xs text-muted-foreground italic truncate">
                       {selected.name} is typing...
                     </div>
                   )}
 
                   {/* Input */}
-                  <div className="p-3 bg-[#202c33] flex gap-3 items-center border-t">
+                  <div className="p-4 bg-card border-t border-border flex gap-3 items-center shrink-0">
                     <input
                       value={text}
                       onChange={(e) => setText(e.target.value)}
                       placeholder="Type a message..."
-                      className="flex-1 p-2 rounded-full bg-[#2a3942] outline-none"
+                      className="flex-1 px-4 py-3 rounded-full bg-secondary/50 border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm"
                       onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                     />
                     <button
                       onClick={sendMessage}
-                      className="bg-[#00a884] px-4 py-2 rounded-full"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-full font-medium transition-colors shadow-sm text-sm"
                     >
                       Send
                     </button>
                   </div>
                 </>
               ) : (
-                <div className="hidden md:flex items-center justify-center flex-1 text-gray-500">
-                  Select a user to start chatting
+                <div className="hidden md:flex flex-col items-center justify-center flex-1 text-muted-foreground bg-secondary/5">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <MessageCircle className="w-8 h-8 text-primary" />
+                  </div>
+                  <p className="font-medium text-lg text-foreground">Your Messages</p>
+                  <p className="text-sm">Select a user to start chatting</p>
                 </div>
               )}
             </div>
           </div>
         </div>
       ) : (
-        <div className="flex justify-center items-center h-screen w-full bg-[#0b141a]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00a884]"></div>
+        <div className="flex justify-center items-center h-screen w-full bg-background">
+          <Loader2 className="animate-spin text-primary w-12 h-12" />
         </div>
       )}
     </>

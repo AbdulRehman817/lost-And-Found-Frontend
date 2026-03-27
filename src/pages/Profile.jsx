@@ -164,13 +164,12 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#3b82f6]/11">
+    <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1 py-12">
         <div className="container mx-auto px-4 md:px-6">
           <Tabs defaultValue={defaultTab} className="w-full">
-            {/* ✅ Tabs Navigation */}
-            <TabsList className="flex w-full flex-wrap justify-center gap-2 bg-card border rounded-lg p-2 shadow-sm">
+            <TabsList className="flex w-full flex-wrap justify-center gap-2 bg-card/80 backdrop-blur-md border border-border/60 rounded-2xl p-2 shadow-sm">
               <TabsTrigger value="dashboard" className="flex-1 min-w-[140px]">
                 <LayoutGrid className="mr-2 h-4 w-4" /> Dashboard
               </TabsTrigger>
@@ -252,7 +251,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="flex justify-start">
-                      <Button className="bg-[#3b82f6] hover:bg-[#3b82f6]/90">
+                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
                         <a href="/create" className="flex items-center">
                           <PlusCircle className="mr-2 h-4 w-4" /> Post a New
                           Item
@@ -365,7 +364,7 @@ export default function ProfilePage() {
                       <div className="flex justify-end">
                         <Button
                           onClick={handleProfileChange}
-                          className="bg-[#3b82f6] hover:bg-[#3b82f6]/90"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
                           disabled={isSaving}
                         >
                           {isSaving ? "Saving..." : "Save Changes"}
@@ -384,7 +383,7 @@ export default function ProfilePage() {
                       <CardTitle className="font-headline text-2xl">
                         Your Posts
                       </CardTitle>
-                      <Button className="bg-[#3b82f6] hover:bg-[#3b82f6]/90">
+                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
                         <a href="/create" className="flex items-center">
                           <PlusCircle className="mr-2 h-4 w-4" /> Post New Item
                         </a>
@@ -404,7 +403,7 @@ export default function ProfilePage() {
                         <p className="font-semibold">
                           You haven't posted any items yet.
                         </p>
-                        <Button className="bg-[#3b82f6] hover:bg-[#3b82f6]/90">
+                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
                           <a href="/create">Post an Item</a>
                         </Button>
                       </div>

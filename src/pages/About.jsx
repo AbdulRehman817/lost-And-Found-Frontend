@@ -9,12 +9,12 @@ import { ReuniteLogo } from "../components/icons";
 
 export default function AboutPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-muted/40">
+    <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1 py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto max-w-3xl px-4 md:px-6">
           <div className="space-y-12">
-            <Card className="overflow-hidden shadow-lg border-border/50">
+            <Card className="overflow-hidden shadow-sm border-border/50 rounded-2xl">
               <CardHeader className="bg-card p-6 border-b">
                 <div className="flex items-center gap-4">
                   <ReuniteLogo className="h-12 w-12 text-primary" />
@@ -46,7 +46,7 @@ export default function AboutPage() {
               </CardContent>
             </Card>
 
-            <Card className="overflow-hidden shadow-lg border-border/50">
+            <Card className="overflow-hidden shadow-sm border-border/50 rounded-2xl">
               <div className="relative h-40 w-full bg-muted">
                 <img
                   src="public/banner.jpg"
@@ -110,10 +110,10 @@ export default function AboutPage() {
                     projects, I invite you to visit my portfolio.
                   </p>
                   <Button
-                    className="bg-[#3b82f6] hover:bg-[#3b82f6]/90"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 shadow-sm hover:shadow-md transition-all"
                     asChild
                   >
-                    <Link href="https://abdulrehmanweb.vercel.app/">
+                    <Link to="https://abdulrehmanweb.vercel.app/">
                       View Portfolio <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>

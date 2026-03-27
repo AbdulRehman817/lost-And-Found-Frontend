@@ -57,21 +57,24 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 relative overflow-hidden">
+      <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] -z-10" />
+      <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] -z-10" />
+      
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 mt-8">
           <div className="flex items-center justify-center gap-2 mb-2">
             <ReuniteLogo />
-            <span className="text-3xl font-bold text-[#3b82f6]">Reunite</span>
+            <span className="text-3xl font-bold text-gradient font-headline">Reunite</span>
           </div>
           <p className="text-muted-foreground">Welcome back</p>
         </div>
 
         {/* Card */}
-        <div className="bg-card border rounded-lg shadow-sm p-8">
+        <div className="bg-card/80 backdrop-blur-md border border-border/60 rounded-2xl shadow-lg p-8">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-lg mb-6 text-sm">
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive p-3 rounded-xl mb-6 text-sm">
               {error}
             </div>
           )}
@@ -86,7 +89,7 @@ export default function Login() {
               <Input
                 type="email"
                 placeholder="you@example.com"
-                className="pl-10"
+                className="pl-10 bg-secondary/30 border-border focus:border-primary rounded-xl"
                 value={emailAddress}
                 onChange={(e) => setEmailAddress(e.target.value)}
               />
@@ -103,7 +106,7 @@ export default function Login() {
               <Input
                 type="password"
                 placeholder="••••••••"
-                className="pl-10"
+                className="pl-10 bg-secondary/30 border-border focus:border-primary rounded-xl"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -113,7 +116,7 @@ export default function Login() {
           {/* Continue Button */}
           <Button
             onClick={onSignInPress}
-            className="w-full bg-[#3b82f6] hover:bg-[#3b82f6]/90 h-11"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 rounded-full font-medium shadow-sm hover:shadow-md transition-all"
             disabled={loading}
           >
             {loading ? "Signing in..." : "Continue"}
@@ -124,7 +127,7 @@ export default function Login() {
             Don’t have an account?{" "}
             <Link
               to="/signup"
-              className="text-[#3b82f6] hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               Sign up
             </Link>
