@@ -17,7 +17,6 @@ import {
   LogOut,
   PlusCircle,
   LayoutDashboard,
-  MessageSquare,
   MessageCircle,
 } from "lucide-react";
 import { useUser, useClerk, useAuth } from "@clerk/clerk-react";
@@ -39,34 +38,25 @@ export function Header() {
     if (!isSignedIn) navigate("/login");
   }, [isSignedIn, navigate]);
 
-  // Clear notification dot when user is on Chat page
   useEffect(() => {
     if (location.pathname.startsWith("/chat")) {
       setHasUnreadChat(false);
     }
   }, [location.pathname]);
 
-  // Global socket listener for new chat messages
   useEffect(() => {
     if (!isSignedIn || !user?.id) return;
-
     const socket = io("https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app", {
       transports: ["websocket"],
     });
     socketRef.current = socket;
-
     socket.emit("register", user.id);
-
     socket.on("receive_message", () => {
-      // Only show if user is NOT already on the chat page
       if (!window.location.pathname.startsWith("/chat")) {
         setHasUnreadChat(true);
       }
     });
-
-    return () => {
-      socket.disconnect();
-    };
+    return () => { socket.disconnect(); };
   }, [isSignedIn, user?.id]);
 
   const handleLogout = async () => {
@@ -79,115 +69,128 @@ export function Header() {
     navigate("/chat");
   };
 
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/feed", label: "Feed" },
+  ];
+
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-white/10 shadow-sm transition-all duration-300">
+     <header className="sticky top-0 z-50 w-full border-b border-white/8 bg-[#0d1b2e]/90 backdrop-blur-md">
       <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 md:px-6">
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2 mr-4 transition-transform hover:scale-105">
+        {/* Left — Logo + Nav */}
+        <div className="flex items-center gap-8">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <ReuniteLogo />
-            <span className="font-headline text-2xl font-bold tracking-tight text-gradient">
-              Reunite
-            </span>
+            <span className="text-xl font-bold tracking-tight text-white">Reunite</span>
           </Link>
 
-          <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-            <Link to="/" className="text-foreground/70 hover:text-foreground transition-colors">
-              Home
-            </Link>
-            <Link to="/about" className="text-foreground/70 hover:text-foreground transition-colors">
-              About
-            </Link>
-            <Link to="/feed" className="text-foreground/70 hover:text-foreground transition-colors">
-              Feed
-            </Link>
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === link.to
+                    ? "text-white bg-white/8"
+                    : "text-white/50 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
         </div>
 
-        <div className="flex items-center gap-5">
-          <Button
-            asChild
-            className="hidden sm:flex bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5 rounded-full px-5"
+        {/* Right — Actions */}
+        <div className="flex items-center gap-2">
+          <Link
+            to="/create"
+            className="hidden sm:flex items-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 px-4 py-2 text-sm font-semibold text-white transition-colors"
           >
-            <Link to="/create">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Report an Item
-            </Link>
-          </Button>
+            <PlusCircle className="h-4 w-4" />
+            Report an Item
+          </Link>
 
           <ThemeToggle />
 
-          {/* Chat Icon with Dynamic Notification Dot */}
-          <Button
-            variant="ghost"
-            size="icon"
+          {/* Chat */}
+          <button
             onClick={handleChatClick}
-            className="relative hover:bg-primary/10 transition-colors rounded-full"
+            className="relative flex h-9 w-9 items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/8 transition-colors"
           >
             <MessageCircle className="h-5 w-5" />
             {hasUnreadChat && (
-              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-                <span className="absolute h-full w-full rounded-full bg-destructive animate-ping opacity-75" />
-                <span className="relative h-2 w-2 rounded-full bg-destructive border-[1.5px] border-background" />
+              <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                <span className="absolute h-full w-full rounded-full bg-sky-400 animate-ping opacity-75" />
+                <span className="relative h-2 w-2 rounded-full bg-sky-400" />
               </span>
             )}
-          </Button>
+          </button>
 
           <UnifiedNotifications />
 
-          {/* User Dropdown */}
+          {/* Avatar dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-10 w-10 p-0 rounded-full ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
-                <Avatar className="h-10 w-10 object-cover rounded-full">
+              <button className="flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-white/10 hover:ring-white/25 transition-all overflow-hidden">
+                <Avatar className="h-9 w-9">
                   <AvatarImage src={user?.imageUrl} className="object-cover" />
-                  <AvatarFallback className="bg-primary/10 text-primary">
+                  <AvatarFallback className="bg-sky-500/20 text-sky-400 text-xs font-bold">
                     {user?.firstName?.[0]?.toUpperCase() || "?"}
                   </AvatarFallback>
                 </Avatar>
-              </Button>
+              </button>
             </DropdownMenuTrigger>
-
-            <DropdownMenuContent className="w-56 rounded-xl" align="end">
-              <DropdownMenuLabel className="font-headline">My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/profile">
-                  <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
-                </Link>
+            <DropdownMenuContent
+              className="w-52 rounded-xl border border-white/8 bg-[#0d1b2e] text-white shadow-xl"
+              align="end"
+            >
+              <DropdownMenuLabel className="text-white/50 text-xs font-semibold uppercase tracking-wider px-3 py-2">
+                My Account
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-white/8" />
+              <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-white/70 hover:text-white hover:bg-white/8 focus:bg-white/8 focus:text-white">
+                <Link to="/profile"><LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/profile?tab=profile">
-                  <User className="mr-2 h-4 w-4" /> Profile
-                </Link>
+              <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-white/70 hover:text-white hover:bg-white/8 focus:bg-white/8 focus:text-white">
+                <Link to="/profile?tab=profile"><User className="mr-2 h-4 w-4" /> Profile</Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+              <DropdownMenuSeparator className="bg-white/8" />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="rounded-lg cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-300"
+              >
                 <LogOut className="mr-2 h-4 w-4" /> Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Mobile Menu */}
+          {/* Mobile menu */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="md:hidden rounded-full">
+              <button className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-white/70 hover:text-white hover:bg-white/8 transition-colors">
                 <Menu className="h-5 w-5" />
-              </Button>
+              </button>
             </SheetTrigger>
-            <SheetContent side="right">
-              <nav className="grid gap-6 text-lg font-medium mt-8">
-                <Link to="/" className="hover:text-primary transition-colors">
-                  Home
-                </Link>
-                <Link to="/feed" className="hover:text-primary transition-colors">
-                  Lost & Found Feed
-                </Link>
-                <Link to="/about" className="hover:text-primary transition-colors">
-                  About
-                </Link>
-                <Button asChild className="rounded-full">
-                  <Link to="/create">Report an Item</Link>
-                </Button>
+            <SheetContent side="right" className="border-white/8 bg-[#0d1b2e] text-white">
+              <nav className="flex flex-col gap-2 mt-10">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className="px-4 py-3 rounded-lg text-base font-medium text-white/70 hover:text-white hover:bg-white/8 transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <div className="mt-4 pt-4 border-t border-white/8">
+                  <Link
+                    to="/create"
+                    className="flex items-center gap-2 rounded-lg bg-sky-500 hover:bg-sky-400 px-4 py-3 text-sm font-bold text-white transition-colors"
+                  >
+                    <PlusCircle className="h-4 w-4" /> Report an Item
+                  </Link>
+                </div>
               </nav>
             </SheetContent>
           </Sheet>

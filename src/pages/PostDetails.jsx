@@ -152,7 +152,7 @@ export default function PostDetails() {
     );
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background bg-animated-mesh">
       <Header />
 
       <main className="flex-1 py-12 sm:py-16">
@@ -160,7 +160,7 @@ export default function PostDetails() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
             {/* Image */}
             <div className="lg:col-span-2">
-              <Card className="overflow-hidden shadow-lg rounded-2xl border-border/50">
+              <Card className="glass-panel overflow-hidden rounded-2xl p-0 border-none">
                 <div className="relative aspect-[4/3] w-full">
                   <img
                     src={post.imageUrl}
@@ -170,7 +170,7 @@ export default function PostDetails() {
 
                   {post.status === "Reunited" && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="text-center text-white p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                      <div className="text-center text-white p-4 bg-black/50 rounded-md backdrop-blur-sm border border-white/10">
                         <CheckCircle className="h-16 w-16 mx-auto text-green-400" />
                         <h2 className="text-3xl font-bold mt-2">Reunited!</h2>
                         <p className="text-green-200">
@@ -185,13 +185,13 @@ export default function PostDetails() {
 
             {/* Post Info */}
             <div className="space-y-6">
-              <Card className="rounded-2xl border-border/50 shadow-sm">
+              <Card className="glass-panel rounded-2xl">
                 <CardContent className="p-6 space-y-5">
                   <div className="flex items-start justify-between">
                     <div>
                       <Badge
                         className={cn(
-                          "text-xs py-1 px-3 rounded-full font-semibold uppercase tracking-wider border-none",
+                          "text-xs py-1 px-3 rounded-md font-semibold uppercase tracking-wider border-none",
                           post.status === "Lost"
                             ? "bg-red-500/10 text-red-500"
                             : "bg-green-500/10 text-green-500"
@@ -216,11 +216,11 @@ export default function PostDetails() {
                     {isOwnPost && !isEditing && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted shrink-0">
+                          <Button variant="ghost" size="icon" className="rounded-md hover:bg-secondary shrink-0">
                             <MoreHorizontal className="h-5 w-5" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-xl">
+                        <DropdownMenuContent align="end" className="rounded-md border-border bg-popover">
                           <DropdownMenuItem onClick={startEditing} className="cursor-pointer">
                             <Pencil className="mr-2 h-4 w-4" /> Edit Post
                           </DropdownMenuItem>
@@ -237,8 +237,8 @@ export default function PostDetails() {
 
                     {isEditing && (
                       <div className="flex gap-2 shrink-0">
-                        <Button size="sm" onClick={handleSaveEdit} className="rounded-full bg-primary text-primary-foreground">Save</Button>
-                        <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="rounded-full">Cancel</Button>
+                        <Button size="sm" onClick={handleSaveEdit} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">Save</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="rounded-md hover:bg-secondary">Cancel</Button>
                       </div>
                     )}
                   </div>
@@ -280,7 +280,7 @@ export default function PostDetails() {
               </Card>
 
               {/* Poster - Conditional Link and Display */}
-              <Card className="rounded-2xl border-border/50 shadow-sm">
+              <Card className="glass-panel rounded-2xl">
                 <CardContent className="p-6">
                   {!isOwnPost ? (
                     <Link to={`/profile/${post.poster._id}`}>
@@ -328,7 +328,7 @@ export default function PostDetails() {
             {/* Description & Comments */}
             <div className="md:col-span-2 lg:col-span-3 space-y-8">
               {/* Description */}
-              <Card className="bg-card rounded-2xl border-border/50 shadow-sm">
+              <Card className="glass-panel rounded-2xl">
                 <CardContent className="p-6 space-y-4">
                   <h2 className="text-2xl font-bold font-headline">Description</h2>
                   {isEditing ? (
@@ -350,7 +350,7 @@ export default function PostDetails() {
                     ).map((tag, index) => (
                       <span
                         key={`${tag}-${index}`}
-                        className="bg-primary/10 text-primary text-xs font-medium px-3 py-1 rounded-full"
+                        className="bg-primary/10 text-primary text-xs font-medium px-3 py-1 rounded-md"
                       >
                         {tag.trim()}
                       </span>
@@ -360,7 +360,7 @@ export default function PostDetails() {
               </Card>
 
               {/* Comments Only */}
-              <Card className="bg-card rounded-2xl border-border/50 shadow-sm">
+              <Card className="glass-panel rounded-2xl">
                 <CardContent className="p-6 space-y-6">
                   <h2 className="text-2xl font-bold flex items-center gap-3 font-headline">
                     <MessageSquare className="h-6 w-6 text-primary" />
@@ -382,8 +382,8 @@ export default function PostDetails() {
 
       {/* Delete Confirmation Overlay */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-          <div className="bg-card rounded-2xl border border-border shadow-2xl p-8 max-w-sm w-full text-center space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4">
+          <div className="glass-panel rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center space-y-5">
             <div className="w-14 h-14 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
               <AlertTriangle className="h-7 w-7 text-destructive" />
             </div>
@@ -394,14 +394,14 @@ export default function PostDetails() {
             <div className="flex gap-3 justify-center">
               <Button
                 variant="outline"
-                className="rounded-full"
+                className="rounded-md hover:bg-secondary transition-colors"
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isDeleting}
               >
                 Cancel
               </Button>
               <Button
-                className="rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                className="rounded-md bg-destructive hover:bg-destructive/90 text-destructive-foreground transition-colors"
                 onClick={handleDeletePost}
                 disabled={isDeleting}
               >

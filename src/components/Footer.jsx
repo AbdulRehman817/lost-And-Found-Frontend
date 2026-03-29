@@ -6,15 +6,13 @@ import { Github, Linkedin, ArrowRight } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="bg-card/50 text-foreground border-t border-border relative overflow-hidden">
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-
+    <footer className="bg-[#0d1b2e]/90 text-foreground border-t border-border">
       <div className="container mx-auto px-4 py-14 md:px-6">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col items-start gap-4">
             <Link to="/" className="flex items-center gap-2 transition-transform hover:scale-105">
               <ReuniteLogo className="h-8 w-8 text-primary" />
-              <span className="font-headline text-2xl font-bold text-gradient">
+              <span className="font-headline text-2xl font-bold text-foreground">
                 Reunite
               </span>
             </Link>
@@ -22,12 +20,12 @@ export function Footer() {
               Connecting communities, one found item at a time.
             </p>
             <div className="flex gap-1">
-              <Button variant="ghost" size="icon" asChild className="rounded-full hover:bg-primary/10">
+              <Button variant="ghost" size="icon" asChild className="rounded-md hover:bg-secondary">
                 <a href="#" aria-label="GitHub">
                   <Github className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
                 </a>
               </Button>
-              <Button variant="ghost" size="icon" asChild className="rounded-full hover:bg-primary/10">
+              <Button variant="ghost" size="icon" asChild className="rounded-md hover:bg-secondary">
                 <a href="#" aria-label="LinkedIn">
                   <Linkedin className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
                 </a>
@@ -99,9 +97,9 @@ export function Footer() {
               <Input
                 type="email"
                 placeholder="Enter your email"
-                className="bg-secondary/30 border-border focus:border-primary rounded-full text-sm"
+                className="bg-transparent border-border focus:border-primary rounded-md text-sm"
               />
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-5 shadow-sm hover:shadow-md transition-all">
+              <Button className="bg-[#00a6f4] hover:bg-[#00a6f4]/90 text-primary-foreground rounded-md px-5 transition-colors">
                 Subscribe
               </Button>
             </div>

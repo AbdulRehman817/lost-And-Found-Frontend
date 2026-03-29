@@ -164,12 +164,12 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background bg-animated-mesh">
       <Header />
       <main className="flex-1 py-12">
         <div className="container mx-auto px-4 md:px-6">
           <Tabs defaultValue={defaultTab} className="w-full">
-            <TabsList className="flex w-full flex-wrap justify-center gap-2 bg-card/80 backdrop-blur-md border border-border/60 rounded-2xl p-2 shadow-sm">
+            <TabsList className="flex w-full flex-wrap justify-center gap-2 bg-card border border-white/5 rounded-2xl p-2 shadow-md">
               <TabsTrigger value="dashboard" className="flex-1 min-w-[140px]">
                 <LayoutGrid className="mr-2 h-4 w-4" /> Dashboard
               </TabsTrigger>
@@ -187,7 +187,7 @@ export default function ProfilePage() {
             <div className="mt-8">
               {/* Dashboard Tab */}
               <TabsContent value="dashboard">
-                <Card className="bg-card border shadow-sm">
+                <Card className="glass-panel rounded-2xl mt-4">
                   <CardHeader>
                     <CardTitle className="font-headline text-3xl">
                       Welcome back, {user?.username || "User"}!
@@ -215,7 +215,7 @@ export default function ProfilePage() {
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-card border shadow-sm hover:shadow-md transition-shadow">
+                      <Card className="glass-panel border-white/5 shadow-sm hover:border-primary/30 hover:shadow-[0_4px_20px_rgba(59,130,246,0.1)] transition-all rounded-xl">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                           <CardTitle className="text-sm font-medium">
                             Pending Requests
@@ -232,7 +232,7 @@ export default function ProfilePage() {
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-card border shadow-sm hover:shadow-md transition-shadow">
+                      <Card className="glass-panel border-white/5 shadow-sm hover:border-primary/30 hover:shadow-[0_4px_20px_rgba(59,130,246,0.1)] transition-all rounded-xl">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                           <CardTitle className="text-sm font-medium">
                             Items Reunited
@@ -251,7 +251,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="flex justify-start">
-                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
+                      <Button className="btn-premium rounded-xl">
                         <a href="/create" className="flex items-center">
                           <PlusCircle className="mr-2 h-4 w-4" /> Post a New
                           Item
@@ -264,7 +264,7 @@ export default function ProfilePage() {
 
               {/* Profile Tab */}
               <TabsContent value="profile">
-                <Card className="bg-card border shadow-sm">
+                <Card className="glass-panel rounded-2xl mt-4">
                   <CardHeader>
                     <CardTitle className="font-headline flex justify-between items-center text-2xl">
                       <span>User Profile</span>
@@ -364,7 +364,7 @@ export default function ProfilePage() {
                       <div className="flex justify-end">
                         <Button
                           onClick={handleProfileChange}
-                          className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
+                          className="btn-premium rounded-xl"
                           disabled={isSaving}
                         >
                           {isSaving ? "Saving..." : "Save Changes"}
@@ -377,13 +377,13 @@ export default function ProfilePage() {
 
               {/* Posts Tab */}
               <TabsContent value="posts">
-                <Card className="bg-card border shadow-sm">
+                <Card className="glass-panel rounded-2xl mt-4">
                   <CardHeader>
                     <div className="flex justify-between items-center">
                       <CardTitle className="font-headline text-2xl">
                         Your Posts
                       </CardTitle>
-                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
+                      <Button className="btn-premium rounded-xl">
                         <a href="/create" className="flex items-center">
                           <PlusCircle className="mr-2 h-4 w-4" /> Post New Item
                         </a>
@@ -403,7 +403,7 @@ export default function ProfilePage() {
                         <p className="font-semibold">
                           You haven't posted any items yet.
                         </p>
-                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
+                        <Button className="btn-premium rounded-xl">
                           <a href="/create">Post an Item</a>
                         </Button>
                       </div>

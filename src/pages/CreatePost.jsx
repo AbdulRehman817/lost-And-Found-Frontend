@@ -1,18 +1,6 @@
 import { useState } from "react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
-import { Button } from "../components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Textarea } from "../components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -20,24 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
-import { cn } from "../lib/utils";
-import {
-  Calendar as CalendarIcon,
-  Upload,
-  Sparkles,
-  CheckCircle,
-  Loader2,
-  Tag as TagIcon,
-} from "lucide-react";
-
+import { Upload, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
+
 export default function SubmitPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -45,20 +19,16 @@ export default function SubmitPage() {
   const [loading, setLoading] = useState(false);
   const [location, setLocation] = useState("");
   const [type, setType] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [activeTags, setActiveTags] = useState([]);
   const { getToken } = useAuth();
   const navigate = useNavigate();
 
-  const [imageFile, setImageFile] = useState(null);
-  // const [suggestedTags, setSuggestedTags] = useState([]);
-  const [activeTags, setActiveTags] = useState([]);
-  // const [isAnalyzing, setIsAnalyzing] = useState(false);
   const handleSubmit = async (e) => {
-    setLoading(true);
     e.preventDefault();
+    setLoading(true);
     try {
-      // ✅ get token inside event handler
       const token = await getToken();
-
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);
@@ -67,221 +37,209 @@ export default function SubmitPage() {
       formData.append("image", imageFile);
       formData.append("type", type);
       formData.append("tags", activeTags.join(","));
-
       const response = await fetch(
         "https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/createPost",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`, // ✅ correct placement
-          },
-          body: formData,
-        }
+        { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData }
       );
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Something went wrong");
-      }
-
-      console.log("✅ Success:", data);
+      if (!response.ok) throw new Error(data.message || "Something went wrong");
       navigate("/feed");
-      // Reset form after successful post
-      setTitle("");
-      setDescription("");
-      setCategory("");
-      setLocation("");
-      setImageFile(null);
-      setType("");
-      setActiveTags([]);
     } catch (err) {
-      console.error("❌ Failed:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  const inputClass = "w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/25 focus:border-sky-500/50 focus:outline-none focus:ring-1 focus:ring-sky-500/20 transition-colors";
+  const labelClass = "block text-xs font-semibold uppercase tracking-wider text-white/40 mb-1.5";
+
   return (
-    <div className="flex min-h-screen flex-col bg-muted">
+    <div className="flex min-h-screen flex-col bg-[#0a1628] text-white overflow-x-hidden">
       <Header />
-      <main className="flex-1 ">
-        <div className="container mx-auto px-4 py-8 md:px-6 lg:py-12 ">
-          <Card className="max-w-3xl mx-auto bg-background/80">
-            <CardHeader className="text-center">
-              <CardTitle className="font-headline text-3xl sm:text-4xl">
-                Report an Item
-              </CardTitle>
-              <CardDescription className="text-lg">
-                Fill out the form below to post a lost or found item.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form className="space-y-8" onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  <Label className="font-semibold text-base">
-                    Is this item Lost or Found?
-                  </Label>
-                  <RadioGroup
-                    className="flex gap-4"
-                    onValueChange={(val) => setType(val)}
-                    value={type}
+
+      <main className="flex-1 w-full">
+        <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 py-12 md:py-16">
+
+          {/* Page title */}
+          <div className="mb-10">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-2">
+              Report an Item
+            </h1>
+            <p className="text-white/40 text-sm">
+              Fill out the form below to post a lost or found item to the community.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+
+            {/* Lost / Found toggle */}
+            <div>
+              <label className={labelClass}>Item Status</label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { value: "lost", label: "I lost something", desc: "Help me find it" },
+                  { value: "found", label: "I found something", desc: "Help me return it" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setType(opt.value)}
+                    className={`rounded-xl border p-4 text-left transition-all ${
+                      type === opt.value
+                        ? "border-sky-500 bg-sky-500/10"
+                        : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/8"
+                    }`}
                   >
-                    <Label
-                      htmlFor="lost"
-                      className="flex items-center space-x-2 border rounded-md p-4 flex-1 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5 cursor-pointer transition-colors"
-                    >
-                      <RadioGroupItem value="lost" id="lost" />
-                      <span>I lost something</span>
-                    </Label>
-                    <Label
-                      htmlFor="found"
-                      className="flex items-center space-x-2 border rounded-md p-4 flex-1 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5 cursor-pointer transition-colors"
-                    >
-                      <RadioGroupItem value="found" id="found" />
-                      <span>I found something</span>
-                    </Label>
-                  </RadioGroup>
-                </div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`h-2 w-2 rounded-full ${type === opt.value ? "bg-sky-400" : "bg-white/20"}`} />
+                      <span className={`text-sm font-semibold ${type === opt.value ? "text-white" : "text-white/60"}`}>
+                        {opt.label}
+                      </span>
+                    </div>
+                    <p className={`text-xs pl-4 ${type === opt.value ? "text-sky-300/70" : "text-white/25"}`}>
+                      {opt.desc}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="title" className="font-semibold">
-                      Item Title
-                    </Label>
-                    <Input
-                      id="title"
-                      placeholder="e.g., Black Leather Wallet"
-                      required
-                      onChange={(e) => setTitle(e.target.value)}
-                      value={title}
-                    />
-                  </div>
+            {/* Title + Category */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Item Title</label>
+                <input
+                  className={inputClass}
+                  placeholder="e.g., Black Leather Wallet"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Category</label>
+                <Select required value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="w-full rounded-lg border border-white/10 bg-white/5 text-white data-[placeholder]:text-white/25 focus:border-sky-500/50 focus:ring-sky-500/20 h-[42px]">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent className="border-white/10 bg-[#0d1b2e] text-white">
+                    <SelectItem value="electronics">Electronics</SelectItem>
+                    <SelectItem value="pets">Pets</SelectItem>
+                    <SelectItem value="personal">Personal Items</SelectItem>
+                    <SelectItem value="accessories">Accessories</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="category" className="font-semibold">
-                      Category
-                    </Label>
-                    <Select
-                      required
-                      value={category}
-                      onValueChange={(val) => setCategory(val)}
-                    >
-                      <SelectTrigger id="category">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="electronics">Electronics</SelectItem>
-                        <SelectItem value="pets">Pets</SelectItem>
-                        <SelectItem value="personal">Personal Items</SelectItem>
-                        <SelectItem value="accessories">Accessories</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+            {/* Description */}
+            <div>
+              <label className={labelClass}>Description</label>
+              <textarea
+                className={`${inputClass} min-h-[110px] resize-none`}
+                placeholder="Describe the item — brand, color, size, and any identifying features."
+                required
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="font-semibold">
-                    Description
-                  </Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Provide details like brand, color, size, and any identifying features."
-                    required
-                    className="min-h-[120px]"
-                    onChange={(e) => setDescription(e.target.value)}
-                    value={description}
+            {/* Location + Tags */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Location</label>
+                <input
+                  className={inputClass}
+                  placeholder="e.g., Central Park"
+                  required
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Tags</label>
+                <input
+                  className={inputClass}
+                  placeholder="e.g., blue, leather, small"
+                  value={activeTags.join(",")}
+                  onChange={(e) => setActiveTags(e.target.value.split(","))}
+                />
+              </div>
+            </div>
+
+            {/* Image upload */}
+            <div>
+              <label className={labelClass}>Photo</label>
+              <label
+                htmlFor="dropzone-file"
+                className={`flex flex-col items-center justify-center w-full rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
+                  imageFile
+                    ? "border-sky-500/40 bg-sky-500/5"
+                    : "border-white/10 bg-white/3 hover:border-white/20 hover:bg-white/5"
+                }`}
+                style={{ minHeight: "160px" }}
+              >
+                {imageFile ? (
+                  <img
+                    src={URL.createObjectURL(imageFile)}
+                    alt="Preview"
+                    className="max-h-56 rounded-lg object-contain p-3"
                   />
-                </div>
-
-                <div className="">
-                  <div className="space-y-2">
-                    <Label htmlFor="tags" className="font-semibold">
-                      Tags
-                    </Label>
-                    <Input
-                      id="tags"
-                      placeholder="e.g., Central Park, near the fountain"
-                      required
-                      onChange={(e) => setActiveTags(e.target.value.split(","))}
-                      value={activeTags.join(",")}
-                    />
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                      <Upload className="h-5 w-5 text-white/30" />
+                    </div>
+                    <p className="text-sm text-white/40 mb-1">
+                      <span className="font-semibold text-white/60">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="text-xs text-white/25">PNG, JPG or GIF</p>
                   </div>
-                </div>
+                )}
+                <input
+                  id="dropzone-file"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files[0])}
+                />
+              </label>
+              {imageFile && (
+                <button
+                  type="button"
+                  onClick={() => setImageFile(null)}
+                  className="mt-2 text-xs text-white/30 hover:text-white/60 transition-colors"
+                >
+                  Remove image
+                </button>
+              )}
+            </div>
 
-                <div className="">
-                  <div className="space-y-2">
-                    <Label htmlFor="location" className="font-semibold">
-                      Location
-                    </Label>
-                    <Input
-                      id="location"
-                      placeholder="e.g., Central Park, near the fountain"
-                      required
-                      onChange={(e) => setLocation(e.target.value)}
-                      value={location}
-                    />
-                  </div>
-                </div>
+            {/* Divider */}
+            <div className="border-t border-white/8" />
 
-                <div className="space-y-4">
-                  <Label className="font-semibold text-base">
-                    Upload an Image
-                  </Label>
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-sky-500 hover:bg-sky-400 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3.5 text-sm font-bold text-white transition-colors"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Item"
+              )}
+            </button>
 
-                  <div className="flex flex-col items-center justify-center w-full">
-                    <label
-                      htmlFor="dropzone-file"
-                      className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted transition-colors"
-                    >
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                        <p className="mb-2 text-sm text-muted-foreground text-center">
-                          <span className="font-semibold">Click to upload</span>{" "}
-                          or drag and drop
-                        </p>
-                        <p className="text-xs text-muted-foreground text-center">
-                          PNG, JPG, or GIF
-                        </p>
-                      </div>
-                      <Input
-                        id="dropzone-file"
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={(e) => setImageFile(e.target.files[0])}
-                      />
-                    </label>
-
-                    {/* Image Preview */}
-                    {imageFile && (
-                      <div className="mt-4 w-full flex justify-center">
-                        <img
-                          src={URL.createObjectURL(imageFile)}
-                          alt="Preview"
-                          className="max-h-64 rounded-lg object-contain border"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <CardFooter className="p-0 pt-4">
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="w-full"
-                    disabled={loading}
-                  >
-                    {loading ? "Submitting..." : "Submit Item"}
-                  </Button>
-                </CardFooter>
-              </form>
-            </CardContent>
-          </Card>
+          </form>
         </div>
       </main>
+
       <Footer />
     </div>
   );

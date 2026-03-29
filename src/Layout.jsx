@@ -14,7 +14,6 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import AboutPage from "./pages/About";
 import UserProfilePage from "./pages/UserProfile"; // ✅ renamed import to match
 import ChatPage from "./pages/ChatPage";
 
@@ -22,7 +21,7 @@ export default function Layout() {
   return (
     <div className="flex-1 flex flex-col min-h-screen">
       {/* <Navbar /> */}
-      <div className="flex flex-1">
+      <div className="">
         <Routes>
           <Route path="/" element={<Home />} />
 
@@ -56,7 +55,6 @@ export default function Layout() {
             }
           />
 
-          <Route path="/about" element={<AboutPage />} />
 
           <Route
             path="/create"

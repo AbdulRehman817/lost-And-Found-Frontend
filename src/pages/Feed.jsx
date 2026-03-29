@@ -1,15 +1,7 @@
-import * as React from "react";
-
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { ItemCard } from "../components/item-card";
 import { Button } from "../components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
 import {
@@ -25,6 +17,14 @@ import {
   PopoverTrigger,
 } from "../components/ui/popover";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../components/ui/sheet";
+import { Calendar } from "../components/ui/calendar";
+import {
   Calendar as CalendarIcon,
   List,
   Map,
@@ -34,15 +34,6 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { Calendar } from "../components/ui/calendar";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "../components/ui/sheet";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
@@ -53,107 +44,89 @@ function Filters({ onFilterChange }) {
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
 
-  const handleApplyFilters = () => {
-    onFilterChange({
-      keyword,
-      category,
-      location,
-      date,
-    });
-  };
-
-  const handleClearFilters = () => {
-    setKeyword("");
-    setCategory("");
-    setLocation("");
-    setDate(undefined);
+  const handleApply = () => onFilterChange({ keyword, category, location, date });
+  const handleClear = () => {
+    setKeyword(""); setCategory(""); setLocation(""); setDate(undefined);
     onFilterChange({});
   };
 
   return (
-    <div className="w-full">
-      <div className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="keyword" className="text-sm font-medium text-foreground">
-            Keyword
-          </Label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              id="keyword"
-              placeholder="e.g., wallet, phone"
-              className="pl-10 w-full bg-secondary/30 border-border focus:border-primary"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="category" className="text-sm font-medium text-foreground">
-            Category
-          </Label>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger id="category" className="w-full bg-secondary/30 border-border">
-              <SelectValue placeholder="Select a category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="electronics">Electronics</SelectItem>
-              <SelectItem value="pets">Pets</SelectItem>
-              <SelectItem value="personal">Personal Items</SelectItem>
-              <SelectItem value="accessories">Accessories</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="location" className="text-sm font-medium text-foreground">
-            Location
-          </Label>
-          <Input
-            id="location"
-            placeholder="e.g., Central Park"
-            className="w-full bg-secondary/30 border-border focus:border-primary"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+    <div className="space-y-5">
+      {/* Keyword */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold uppercase tracking-wider text-white/40">Keyword</Label>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 pointer-events-none" />
+          <input
+            placeholder="e.g., wallet, phone"
+            className="w-full rounded-lg border border-white/10 bg-white/5 pl-10 pr-4 py-2.5 text-sm text-white placeholder-white/25 focus:border-sky-500/50 focus:outline-none focus:ring-1 focus:ring-sky-500/30 transition-colors"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
           />
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-foreground">Date Lost/Found</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal bg-secondary/30 border-border",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? date.toLocaleDateString() : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start" side="bottom">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+      {/* Category */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold uppercase tracking-wider text-white/40">Category</Label>
+        <Select value={category} onValueChange={setCategory}>
+          <SelectTrigger className="w-full rounded-lg border border-white/10 bg-white/5 text-white focus:border-sky-500/50 focus:ring-sky-500/30">
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent className="border-white/10 bg-[#0d1b2e] text-white">
+            <SelectItem value="electronics">Electronics</SelectItem>
+            <SelectItem value="pets">Pets</SelectItem>
+            <SelectItem value="personal">Personal Items</SelectItem>
+            <SelectItem value="accessories">Accessories</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        <div className="flex gap-3 pt-2">
-          <Button className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full" onClick={handleApplyFilters}>
-            Apply Filters
-          </Button>
-          <Button variant="outline" className="rounded-full border-border" onClick={handleClearFilters}>
-            Clear
-          </Button>
-        </div>
+      {/* Location */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold uppercase tracking-wider text-white/40">Location</Label>
+        <input
+          placeholder="e.g., Central Park"
+          className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/25 focus:border-sky-500/50 focus:outline-none focus:ring-1 focus:ring-sky-500/30 transition-colors"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        />
+      </div>
+
+      {/* Date */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold uppercase tracking-wider text-white/40">Date</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn(
+              "flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm transition-colors focus:border-sky-500/50 focus:outline-none",
+              date ? "text-white" : "text-white/25"
+            )}>
+              <CalendarIcon className="h-4 w-4 text-white/30" />
+              {date ? date.toLocaleDateString() : "Pick a date"}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 border-white/10 bg-[#0d1b2e]" align="start">
+            <Calendar mode="single" selected={date} onSelect={setDate} initialFocus className="text-white" />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 pt-1">
+        <button
+          onClick={handleApply}
+          className="flex-1 rounded-lg bg-sky-500 hover:bg-sky-400 py-2.5 text-sm font-semibold text-white transition-colors"
+        >
+          Apply
+        </button>
+        <button
+          onClick={handleClear}
+          className="rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2.5 text-sm font-medium text-white/60 hover:text-white transition-colors"
+        >
+          Clear
+        </button>
       </div>
     </div>
   );
@@ -167,9 +140,7 @@ export default function Feed() {
   const [activeTab, setActiveTab] = useState("active");
   const { getToken, isSignedIn } = useAuth();
 
-  useEffect(() => {
-    fetchPosts();
-  }, [filters]);
+  useEffect(() => { fetchPosts(); }, [filters]);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -177,230 +148,182 @@ export default function Feed() {
       const params = new URLSearchParams();
       if (filters.category) params.append("category", filters.category);
       if (filters.location) params.append("location", filters.location);
-
       const headers = {};
-
       if (isSignedIn) {
         const token = await getToken();
-        if (token) {
-          headers.Authorization = `Bearer ${token}`;
-        }
+        if (token) headers.Authorization = `Bearer ${token}`;
       }
-
       const response = await axios.get(
         `https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/getAllPosts?${params.toString()}`,
         { headers }
       );
-
-      let filteredPosts = response.data.data || [];
-
+      let filtered = response.data.data || [];
       if (filters.keyword) {
-        const keyword = filters.keyword.toLowerCase();
-        filteredPosts = filteredPosts.filter(
-          (post) =>
-            post.title?.toLowerCase().includes(keyword) ||
-            post.description?.toLowerCase().includes(keyword) ||
-            post.tags?.some((tag) => tag.toLowerCase().includes(keyword))
+        const kw = filters.keyword.toLowerCase();
+        filtered = filtered.filter((p) =>
+          p.title?.toLowerCase().includes(kw) ||
+          p.description?.toLowerCase().includes(kw) ||
+          p.tags?.some((t) => t.toLowerCase().includes(kw))
         );
       }
-
-      setPost(filteredPosts);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
+      setPost(filtered);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-  };
-
-  // Separate posts into active and resolved/reunited
-  const activePosts = posts.filter(
-    (p) => p.status !== "resolved" && p.status !== "reunited" && p.status !== "found"
-  );
-  const resolvedPosts = posts.filter(
-    (p) => p.status === "resolved" || p.status === "reunited" || p.status === "found"
-  );
-
+  const activePosts = posts.filter((p) => p.status !== "resolved" && p.status !== "reunited" && p.status !== "found");
+  const resolvedPosts = posts.filter((p) => p.status === "resolved" || p.status === "reunited" || p.status === "found");
   const displayedPosts = activeTab === "active" ? activePosts : resolvedPosts;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background w-full overflow-x-hidden">
+    <div className="flex min-h-screen flex-col bg-[#0a1628] text-white overflow-x-hidden">
       <Header />
+
       <main className="flex-1 w-full">
-        <div className="w-full max-w-7xl mx-auto px-4 py-8 md:px-6 lg:px-8 lg:py-12">
-          {/* Page Header */}
-          <div className="mb-8 md:mb-10">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="font-headline text-2xl font-bold tracking-tight md:text-3xl lg:text-4xl text-foreground">
-                  Lost & Found Feed
-                </h2>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Browse items reported by the community
-                </p>
-              </div>
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-10 md:py-14">
 
-              {/* View Controls */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center rounded-full bg-secondary/50 border border-border overflow-hidden p-0.5">
-                  <Button
-                    variant={view === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setView("list")}
-                    aria-label="List view"
+          {/* Page header */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                Lost &amp; Found Feed
+              </h1>
+              <p className="text-sm text-white/40 mt-1">Browse items reported by the community</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* View toggle */}
+              <div className="flex items-center rounded-lg border border-white/10 bg-white/5 p-0.5">
+                {[
+                  { id: "list", icon: List, label: "List" },
+                  { id: "map", icon: Map, label: "Map" },
+                ].map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={() => setView(v.id)}
                     className={cn(
-                      "rounded-full h-8 px-4 text-xs",
-                      view === "list" && "bg-primary text-primary-foreground shadow-sm"
+                      "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+                      view === v.id
+                        ? "bg-sky-500 text-white"
+                        : "text-white/40 hover:text-white"
                     )}
                   >
-                    <List className="h-3.5 w-3.5 mr-1.5" />
-                    List
-                  </Button>
-                  <Button
-                    variant={view === "map" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setView("map")}
-                    aria-label="Map view"
-                    className={cn(
-                      "rounded-full h-8 px-4 text-xs",
-                      view === "map" && "bg-primary text-primary-foreground shadow-sm"
-                    )}
-                  >
-                    <Map className="h-3.5 w-3.5 mr-1.5" />
-                    Map
-                  </Button>
-                </div>
-
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-9 rounded-full border-border hover:border-primary/50 transition-colors">
-                      <SlidersHorizontal className="h-4 w-4 mr-2" />
-                      Filters
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-full sm:max-w-md p-0">
-                    <SheetHeader className="px-6 py-6 border-b border-border">
-                      <SheetTitle className="font-headline">Filters</SheetTitle>
-                      <SheetDescription>
-                        Refine your search results
-                      </SheetDescription>
-                    </SheetHeader>
-                    <div className="px-6 py-6 overflow-y-auto max-h-[calc(100vh-120px)]">
-                      <Filters onFilterChange={handleFilterChange} />
-                    </div>
-                  </SheetContent>
-                </Sheet>
+                    <v.icon className="h-3.5 w-3.5" />
+                    {v.label}
+                  </button>
+                ))}
               </div>
+
+              {/* Filter sheet */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2 text-sm font-medium text-white/60 hover:text-white transition-colors">
+                    <SlidersHorizontal className="h-4 w-4" />
+                    Filters
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full sm:max-w-sm border-white/8 bg-[#0d1b2e] text-white p-0">
+                  <SheetHeader className="px-6 py-5 border-b border-white/8">
+                    <SheetTitle className="text-white font-bold">Filters</SheetTitle>
+                  </SheetHeader>
+                  <div className="px-6 py-6 overflow-y-auto">
+                    <Filters onFilterChange={setFilters} />
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
 
-          {/* Tabs: Active vs Reunited */}
-          <div className="mb-8">
-            <div className="flex items-center gap-1 p-1 bg-secondary/30 rounded-full border border-border w-fit">
-              <button
-                onClick={() => setActiveTab("active")}
-                className={cn(
-                  "px-5 py-2 rounded-full text-sm font-medium transition-all duration-200",
-                  activeTab === "active"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Active ({activePosts.length})
-              </button>
-              <button
-                onClick={() => setActiveTab("resolved")}
-                className={cn(
-                  "px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-1.5",
-                  activeTab === "resolved"
-                    ? "bg-green-600 text-white shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Reunited ({resolvedPosts.length})
-              </button>
-            </div>
+          {/* Tabs */}
+          <div className="flex items-center gap-1 w-fit rounded-lg border border-white/10 bg-white/5 p-0.5 mb-8">
+            <button
+              onClick={() => setActiveTab("active")}
+              className={cn(
+                "px-5 py-2 rounded-md text-sm font-semibold transition-colors",
+                activeTab === "active" ? "bg-sky-500 text-white" : "text-white/40 hover:text-white"
+              )}
+            >
+              Active ({activePosts.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("resolved")}
+              className={cn(
+                "flex items-center gap-1.5 px-5 py-2 rounded-md text-sm font-semibold transition-colors",
+                activeTab === "resolved" ? "bg-emerald-500 text-white" : "text-white/40 hover:text-white"
+              )}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Reunited ({resolvedPosts.length})
+            </button>
           </div>
 
-          {/* Content Area */}
+          {/* Content */}
           {loading ? (
-            <div className="flex flex-col justify-center items-center py-20 md:py-28 gap-3">
-              <Loader2 className="h-10 w-10 text-primary animate-spin" />
-              <p className="text-sm text-muted-foreground">Loading items...</p>
+            <div className="flex flex-col items-center justify-center py-32 gap-3">
+              <Loader2 className="h-8 w-8 text-sky-400 animate-spin" />
+              <p className="text-sm text-white/40">Loading items...</p>
             </div>
           ) : view === "list" ? (
-            <>
-              {displayedPosts.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+            displayedPosts.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {displayedPosts.map((item) => (
                     <ItemCard key={item._id} {...item} />
                   ))}
                 </div>
-              ) : (
-                <Card className="w-full border-dashed border-2 border-border bg-secondary/10 rounded-2xl">
-                  <CardContent className="flex flex-col items-center justify-center py-20 md:py-28">
-                    {activeTab === "resolved" ? (
-                      <>
-                        <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-                          <CheckCircle2 className="h-8 w-8 text-green-500" />
-                        </div>
-                        <p className="text-foreground font-medium text-lg mb-1">No reunited items yet</p>
-                        <p className="text-muted-foreground text-sm text-center max-w-md">
-                          When items are successfully returned to their owners, they'll appear here.
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                          <Search className="h-8 w-8 text-primary" />
-                        </div>
-                        <p className="text-foreground font-medium text-lg mb-1">No posts found</p>
-                        <p className="text-muted-foreground text-sm text-center max-w-md">
-                          Try adjusting your filters or check back later for new items.
-                        </p>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </>
+                <div className="flex justify-center mt-12">
+                  <button className="rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 px-8 py-2.5 text-sm font-semibold text-white/60 hover:text-white transition-colors">
+                    Load More
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-32 rounded-2xl border border-dashed border-white/10 bg-white/2">
+                {activeTab === "resolved" ? (
+                  <>
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-emerald-500/20 bg-emerald-500/10">
+                      <CheckCircle2 className="h-7 w-7 text-emerald-400" />
+                    </div>
+                    <p className="font-semibold text-white mb-1">No reunited items yet</p>
+                    <p className="text-sm text-white/40 text-center max-w-xs">
+                      When items are returned to their owners, they'll appear here.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-sky-500/20 bg-sky-500/10">
+                      <Search className="h-7 w-7 text-sky-400" />
+                    </div>
+                    <p className="font-semibold text-white mb-1">No posts found</p>
+                    <p className="text-sm text-white/40 text-center max-w-xs">
+                      Try adjusting your filters or check back later for new items.
+                    </p>
+                  </>
+                )}
+              </div>
+            )
           ) : (
-            <Card className="w-full overflow-hidden rounded-2xl border-border">
-              <div className="relative h-[50vh] min-h-[400px] md:h-[600px] w-full bg-muted">
-                <img
-                  src="https://picsum.photos/seed/99/1200/600"
-                  alt="Map of items"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm">
-                  <div className="bg-background/95 backdrop-blur-md p-8 rounded-2xl shadow-lg text-center border border-border">
-                    <p className="font-headline font-semibold text-lg mb-1 text-foreground">
-                      Interactive Map View
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      Coming Soon!
-                    </p>
-                  </div>
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/3 h-[500px] md:h-[600px]">
+              <img
+                src="https://picsum.photos/seed/99/1200/600"
+                alt="Map"
+                className="w-full h-full object-cover opacity-40"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="rounded-2xl border border-white/10 bg-[#0d1b2e]/90 backdrop-blur-sm px-10 py-8 text-center">
+                  <p className="font-bold text-white text-lg mb-1">Interactive Map View</p>
+                  <p className="text-sm text-white/40">Coming Soon</p>
                 </div>
               </div>
-            </Card>
-          )}
-
-          {/* Load More Button */}
-          {displayedPosts.length > 0 && view === "list" && (
-            <div className="flex justify-center mt-10 md:mt-14">
-              <Button variant="outline" size="lg" className="min-w-[160px] rounded-full border-border hover:border-primary/50 transition-colors">
-                Load More
-              </Button>
             </div>
           )}
+
         </div>
       </main>
+
       <Footer />
     </div>
   );

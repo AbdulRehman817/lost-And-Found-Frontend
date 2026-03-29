@@ -151,8 +151,8 @@ export default function CommentBox() {
       {/* Header */}
       <div className="border-b border-border pb-4 mb-6">
         <h3 className="text-xl font-semibold text-foreground flex items-center gap-2.5 font-headline">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <MessageCircle className="w-4 h-4 text-primary" />
+          <div className="w-8 h-8 rounded-md bg-secondary flex items-center justify-center">
+            <MessageCircle className="w-4 h-4 text-foreground" />
           </div>
           Comments ({comments.length})
         </h3>
@@ -173,7 +173,7 @@ export default function CommentBox() {
               {/* Main Comment */}
               <div className="flex gap-4">
                 <div className="flex-shrink-0">
-                  <Avatar className="w-10 h-10 ring-2 ring-primary/10">
+                  <Avatar className="w-10 h-10 border border-border">
                     <AvatarImage
                       src={comment.userId?.profileImage || ""}
                       className="object-cover"
@@ -208,7 +208,7 @@ export default function CommentBox() {
                   </div>
 
                   {/* Comment message */}
-                  <div className="bg-secondary/40 rounded-xl px-4 py-3 mb-3 border border-border/30">
+                  <div className="bg-secondary/20 rounded-md px-4 py-3 mb-3 border border-border">
                     <p className="text-foreground/90 text-sm leading-relaxed break-words">
                       {comment.message}
                     </p>
@@ -236,7 +236,7 @@ export default function CommentBox() {
               {/* Reply Box - Anyone can reply to comments */}
               {replyingTo === comment._id && (
                 <div className="mt-4 ml-14">
-                  <div className="bg-secondary/20 rounded-xl p-4 border border-border/50">
+                  <div className="bg-card rounded-md p-4 border border-border shadow-sm">
                     <div className="flex gap-3">
                       <Avatar className="w-8 h-8 flex-shrink-0">
                         <AvatarImage
@@ -261,7 +261,7 @@ export default function CommentBox() {
                           <Button
                             onClick={() => handlePostReply(comment._id)}
                             size="sm"
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-1.5 text-xs font-medium rounded-full"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-1.5 text-xs font-medium rounded-md transition-colors"
                           >
                             Post Reply
                           </Button>
@@ -269,7 +269,7 @@ export default function CommentBox() {
                             onClick={hideReplyBox}
                             size="sm"
                             variant="ghost"
-                            className="text-muted-foreground hover:text-foreground px-4 py-1.5 text-xs rounded-full"
+                            className="text-muted-foreground hover:bg-secondary px-4 py-1.5 text-xs rounded-md transition-colors"
                           >
                             Cancel
                           </Button>
@@ -286,7 +286,7 @@ export default function CommentBox() {
                   {comment.replies.map((reply) => (
                     <div key={reply._id} className="flex gap-3">
                       <div className="flex-shrink-0">
-                        <Avatar className="w-8 h-8 ring-1 ring-border">
+                        <Avatar className="w-8 h-8 border border-border">
                           <AvatarImage
                             src={reply.userId?.profileImage || ""}
                             alt={reply.userId?.name || "User"}
@@ -320,7 +320,7 @@ export default function CommentBox() {
                           </time>
                         </div>
 
-                        <div className="bg-secondary/20 rounded-lg px-3 py-2 border border-border/20">
+                        <div className="bg-secondary/10 rounded-md px-3 py-2 border border-border">
                           <p className="text-foreground/80 text-sm leading-relaxed break-words">
                             {reply.message}
                           </p>
@@ -334,8 +334,8 @@ export default function CommentBox() {
           ))
         ) : (
           <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-secondary/50 flex items-center justify-center">
-              <MessageCircle className="w-8 h-8 text-muted-foreground/50" />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-md bg-secondary flex items-center justify-center border border-border">
+              <MessageCircle className="w-8 h-8 text-muted-foreground" />
             </div>
             <h4 className="text-foreground font-medium mb-1">No comments yet</h4>
             <p className="text-sm text-muted-foreground">
@@ -350,7 +350,7 @@ export default function CommentBox() {
         <div className="border-t border-border pt-6">
           <div className="flex gap-4">
             <div className="flex-shrink-0">
-              <Avatar className="w-10 h-10 ring-2 ring-primary/10">
+              <Avatar className="w-10 h-10 border border-border">
                 <AvatarImage
                   src={user?.imageUrl || ""}
                   alt={user?.fullName || "You"}
@@ -368,13 +368,13 @@ export default function CommentBox() {
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handlePostComment()}
-                className="bg-secondary/30 border-border focus:border-primary text-foreground placeholder-muted-foreground py-3 px-4 text-sm rounded-xl"
+                className="bg-transparent border-border focus:border-primary text-foreground placeholder-muted-foreground py-3 px-4 text-sm rounded-md"
               />
 
               <div className="flex justify-end">
                 <Button
                   onClick={handlePostComment}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 text-sm font-medium transition-all duration-200 rounded-full shadow-sm hover:shadow-md"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 text-sm font-medium transition-colors rounded-md"
                   disabled={!newComment.trim()}
                 >
                   <Send className="w-4 h-4 mr-2" />
@@ -386,8 +386,8 @@ export default function CommentBox() {
         </div>
       ) : (
         <div className="border-t border-border pt-6">
-          <div className="bg-secondary/20 rounded-xl p-6 text-center border border-border/50">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
+          <div className="bg-card rounded-md p-6 text-center border border-border shadow-sm">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-md bg-secondary flex items-center justify-center border border-border">
               <Ban className="w-6 h-6 text-muted-foreground" />
             </div>
             <h4 className="text-foreground font-medium mb-1">

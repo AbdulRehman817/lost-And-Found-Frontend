@@ -62,11 +62,11 @@ export default function RequestsList() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-card border shadow-sm">
+    <div className="p-6 max-w-4xl mx-auto bg-card border border-border shadow-sm rounded-xl">
       {/* Header Section */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-primary rounded-xl">
+          <div className="p-2 bg-primary rounded-md">
             <Users className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -86,7 +86,7 @@ export default function RequestsList() {
         </div>
       ) : acceptedRequests.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg bg-card">
-          <div className="inline-flex p-4 bg-muted rounded-full mb-4">
+          <div className="inline-flex p-4 bg-secondary rounded-md mb-4 border border-border">
             <Inbox className="w-10 h-10 text-muted-foreground" />
           </div>
           <h3 className="text-lg font-semibold mb-2">No notifications</h3>
@@ -99,12 +99,12 @@ export default function RequestsList() {
           {acceptedRequests.map((req) => (
             <div
               key={req._id}
-              className="bg-card border rounded-xl p-4 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md"
+              className="bg-card border border-border rounded-md p-4 hover:border-primary/50 transition-colors shadow-sm"
             >
               <div className="flex items-start gap-4">
                 {/* Avatar */}
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                  <div className="w-12 h-12 rounded-md bg-secondary border border-border flex items-center justify-center text-foreground font-semibold">
                     {(req.requesterId?.name || "U")[0].toUpperCase()}
                   </div>
                 </div>
@@ -126,7 +126,7 @@ export default function RequestsList() {
                       onClick={() => handleDiscard(req._id)}
                       variant="ghost"
                       size="sm"
-                      className="flex-shrink-0 h-8 w-8 p-0 hover:bg-red-500/10 hover:text-red-500 rounded-full"
+                      className="flex-shrink-0 h-8 w-8 p-0 hover:bg-red-500/10 hover:text-red-500 rounded-md transition-colors"
                       title="Dismiss notification"
                     >
                       <X className="w-4 h-4" />
@@ -134,7 +134,7 @@ export default function RequestsList() {
                   </div>
 
                   {/* Status Badge */}
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-lg">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-md">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                     <span className="text-xs font-medium text-green-600 dark:text-green-400">
                       Connection accepted

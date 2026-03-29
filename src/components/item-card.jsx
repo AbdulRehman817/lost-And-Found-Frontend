@@ -27,10 +27,10 @@ export function ItemCard({
   createdAt,
 }) {
   return (
-    <Card className="group flex py-0 h-full bg-card/80 backdrop-blur-sm border border-border/60 flex-col overflow-hidden rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/20">
+    <Card className="group flex py-0 h-full glass-panel flex-col overflow-hidden rounded-2xl transition-all duration-500 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(59,130,246,0.25)]">
       {/* Header */}
       <CardHeader className="flex flex-row items-center gap-3 p-4">
-        <Avatar className="h-10 w-10 ring-2 ring-primary/10">
+        <Avatar className="h-10 w-10 border border-border">
           <AvatarImage
             src={userId?.profileImage}
             alt={userId?.name}
@@ -54,7 +54,7 @@ export function ItemCard({
 
         <Badge
           className={cn(
-            "rounded-full text-[10px] px-2.5 py-0.5 font-semibold uppercase tracking-wider border-none",
+            "rounded-md text-[10px] px-2.5 py-0.5 font-semibold uppercase tracking-wider border-none",
             type === "lost"
               ? "bg-red-500/10 text-red-500"
               : type === "found"
@@ -77,7 +77,6 @@ export function ItemCard({
                 className="object-cover w-full h-full rounded-xl transition-transform duration-500 group-hover:scale-105"
                 data-ai-hint={imageHint}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
           </div>
         </Link>
@@ -93,7 +92,7 @@ export function ItemCard({
             <span className="truncate">{location}</span>
           </div>
 
-          <Button asChild className="w-full rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all border-none shadow-none font-medium" variant="outline">
+          <Button asChild className="w-full rounded-xl bg-secondary border border-white/5 text-foreground hover:bg-primary hover:text-white transition-all font-medium hover:shadow-sm" variant="outline">
             <Link to={`/feed/${_id}`}>View Details</Link>
           </Button>
         </div>

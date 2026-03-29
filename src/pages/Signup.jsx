@@ -214,21 +214,20 @@ export default function SignUp() {
   }, [user, profileImage]);
 
   return (
-    <div className="min-h-screen flex items-center mx-auto w-full justify-center bg-background px-4 relative overflow-hidden">
-      <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] -z-10" />
-      <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] -z-10" />
+    <div className="min-h-screen flex items-center mx-auto w-full justify-center bg-background bg-animated-mesh px-4 relative overflow-hidden">
+      <div className="absolute inset-0 spotlight-primary pointer-events-none"></div>
       <div className="w-full max-w-md">
         <div className="text-center mb-8 mt-8">
           <div className="flex items-center justify-center gap-2 mb-2">
             <ReuniteLogo />
-            <span className="text-3xl font-bold text-gradient font-headline">Reunite</span>
+            <span className="text-3xl font-bold text-foreground font-headline">Reunite</span>
           </div>
           <p className="text-muted-foreground">
             {pendingVerification ? "Check your email" : "Create your account"}
           </p>
         </div>
 
-        <div className="bg-card/80 backdrop-blur-md border border-border/60 rounded-2xl shadow-lg p-8">
+        <div className="glass-panel p-8 rounded-2xl relative z-10 w-full shadow-2xl">
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive p-3 rounded-xl mb-6 text-sm">
               {error}
@@ -258,7 +257,7 @@ export default function SignUp() {
                             <Input
                               {...field}
                               placeholder="johndoe"
-                              className="pl-10"
+                              className="pl-10 bg-transparent border-border focus:border-primary rounded-lg"
                             />
                           </div>
                         </FormControl>
@@ -321,7 +320,7 @@ export default function SignUp() {
                             <Input
                               {...field}
                               type="email"
-                              className="pl-10"
+                              className="pl-10 bg-transparent border-border focus:border-primary rounded-lg"
                               placeholder="you@example.com"
                             />
                           </div>
@@ -349,7 +348,7 @@ export default function SignUp() {
                             <Input
                               {...field}
                               type="password"
-                              className="pl-10"
+                              className="pl-10 bg-transparent border-border focus:border-primary rounded-lg"
                               placeholder="••••••••"
                             />
                           </div>
@@ -377,7 +376,7 @@ export default function SignUp() {
                             <Input
                               {...field}
                               type="password"
-                              className="pl-10"
+                              className="pl-10 bg-transparent border-border focus:border-primary rounded-lg"
                               placeholder="••••••••"
                             />
                           </div>
@@ -390,7 +389,7 @@ export default function SignUp() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 rounded-full font-medium shadow-sm"
+                    className="w-full btn-premium h-11 rounded-xl font-medium"
                     disabled={loading}
                   >
                     {loading ? "Creating account..." : "Create Account"}
@@ -424,7 +423,7 @@ export default function SignUp() {
                 maxLength={6}
               />
               <Button
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 rounded-full font-medium shadow-sm"
+                className="w-full btn-premium h-11 rounded-xl font-medium"
                 onClick={onVerify}
                 disabled={loading || code.length !== 6}
               >
