@@ -112,8 +112,8 @@ export default function ProfilePage() {
 
   const statCards = [
     { label: "Total Posts",       value: postDetails.length,     icon: FileText,   color: "text-sky-400",     bg: "bg-sky-500/10 border-sky-500/15" },
-    { label: "Pending Requests",  value: activeRequests.length,  icon: Inbox,      color: "text-amber-400",   bg: "bg-amber-500/10 border-amber-500/15" },
-    { label: "Items Reunited",    value: userStats.itemsReunited, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/15" },
+    { label: "Pending Requests",  value: activeRequests.length,  icon: Inbox,      color: "text-sky-400",   bg: "bg-sky-500/10 border-sky-500/15" },
+    { label: "Items Reunited",    value: userStats.itemsReunited, icon: CheckCircle, color: "text-sky-400", bg: "bg-sky-500/10 border-sky-500/15" },
   ];
 
   return (
