@@ -1,13 +1,8 @@
 import * as React from "react";
 import axios from "axios";
-import { useEffect } from "react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
-import { Badge } from "../components/ui/badge";
-import { Card, CardContent } from "../components/ui/card";
-import { Separator } from "../components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import { Button } from "../components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,16 +22,13 @@ import {
   Trash2,
   AlertTriangle,
 } from "lucide-react";
-import { cn } from "../lib/utils";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import CommentBox from "../components/CommentBox";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export default function PostDetails() {
   const { id } = useParams();
-  const [hasConnection, setHasConnection] = useState(false);
   const [post, setPost] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -46,72 +38,53 @@ export default function PostDetails() {
   const [editLocation, setEditLocation] = useState("");
 
   const { getToken } = useAuth();
-  const { user } = useUser(); // Get current user
+  const { user } = useUser();
   const navigate = useNavigate();
 
-  // 🔹 Fetch post details
   React.useEffect(() => {
     if (!id) return;
-
     const fetchPost = async () => {
       try {
-        const response = await axios.get(
-          `https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/feed/${id}`
-        );
-        const data = response.data.data;
-        console.log("postDescription", data);
+        const res = await axios.get(`https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/feed/${id}`);
+        const d = res.data.data;
         setPost({
-          id: data?._id,
-          _id: data?._id,
-          title: data?.title,
-          status: data?.type === "lost" ? "Lost" : "Found",
-          location: data?.location,
-          date: new Date(data?.createdAt).toLocaleDateString(),
-          imageUrl: data?.imageUrl,
-          description: data?.description,
-          category: data?.category,
-          tags: data?.tags || [],
+          id: d?._id, _id: d?._id,
+          title: d?.title,
+          status: d?.type === "lost" ? "Lost" : "Found",
+          location: d?.location,
+          date: new Date(d?.createdAt).toLocaleDateString(),
+          imageUrl: d?.imageUrl,
+          description: d?.description,
+          category: d?.category,
+          tags: d?.tags || [],
           poster: {
-            _id: data?.userId?._id,
-            clerkId: data?.userId?.clerkId,
-            name: data?.userId?.name || "Anonymous",
-            avatar: data?.userId?.avatar || "https://picsum.photos/seed/10/200",
-            email: data?.userId?.email || "",
-            phone: data?.userId?.phone || "",
-            imageUrl: data?.userId?.profileImage,
+            _id: d?.userId?._id,
+            clerkId: d?.userId?.clerkId,
+            name: d?.userId?.name || "Anonymous",
+            imageUrl: d?.userId?.profileImage,
+            email: d?.userId?.email || "",
+            phone: d?.userId?.phone || "",
           },
         });
-      } catch (error) {
-        console.error("Error fetching post:", error);
-      }
+      } catch (e) { console.error(e); }
     };
-
     fetchPost();
   }, [id]);
 
-  // Check if the current user is viewing their own post
   const isOwnPost = user?.id === post?.poster?.clerkId;
 
-  // Delete post handler
   const handleDeletePost = async () => {
     setIsDeleting(true);
     try {
       const token = await getToken();
-      await axios.delete(
-        `https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/posts/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.delete(`https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/posts/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       navigate("/feed");
-    } catch (err) {
-      console.error("Error deleting post:", err);
-      alert("Failed to delete post.");
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteConfirm(false);
-    }
+    } catch (e) { console.error(e); alert("Failed to delete post."); }
+    finally { setIsDeleting(false); setShowDeleteConfirm(false); }
   };
 
-  // Start editing
   const startEditing = () => {
     setEditTitle(post.title);
     setEditDescription(post.description);
@@ -119,7 +92,6 @@ export default function PostDetails() {
     setIsEditing(true);
   };
 
-  // Save edit handler
   const handleSaveEdit = async () => {
     try {
       const token = await getToken();
@@ -128,251 +100,193 @@ export default function PostDetails() {
         { title: editTitle, description: editDescription, location: editLocation },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPost((prev) => ({
-        ...prev,
-        title: editTitle,
-        description: editDescription,
-        location: editLocation,
-      }));
+      setPost((p) => ({ ...p, title: editTitle, description: editDescription, location: editLocation }));
       setIsEditing(false);
-    } catch (err) {
-      console.error("Error updating post:", err);
-      alert("Failed to update post.");
-    }
+    } catch (e) { console.error(e); alert("Failed to update post."); }
   };
 
-  if (!post)
-    return (
-      <div className="flex min-h-screen flex-col bg-background">
-        <Header />
-        <div className="flex-1 flex justify-center items-center">
-          <Loader2 className="animate-spin text-primary w-10 h-10" />
-        </div>
+  const editInputClass = "bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm w-full focus:border-sky-500/50 focus:outline-none focus:ring-1 focus:ring-sky-500/20 transition-colors";
+
+  if (!post) return (
+    <div className="flex min-h-screen flex-col bg-[#0a1628]">
+      <Header />
+      <div className="flex flex-1 items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-sky-400" />
       </div>
-    );
+    </div>
+  );
 
   return (
-    <div className="flex min-h-screen flex-col bg-background bg-animated-mesh">
+    <div className="flex min-h-screen flex-col bg-[#0a1628] text-white overflow-x-hidden">
       <Header />
 
-      <main className="flex-1 py-12 sm:py-16">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
-            {/* Image */}
-            <div className="lg:col-span-2">
-              <Card className="glass-panel overflow-hidden rounded-2xl p-0 border-none">
-                <div className="relative aspect-[4/3] w-full">
-                  <img
-                    src={post.imageUrl}
-                    alt={post.title}
-                    className="object-cover w-full h-full"
-                  />
+      <main className="flex-1 w-full">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-10 md:py-14">
 
-                  {post.status === "Reunited" && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="text-center text-white p-4 bg-black/50 rounded-md backdrop-blur-sm border border-white/10">
-                        <CheckCircle className="h-16 w-16 mx-auto text-green-400" />
-                        <h2 className="text-3xl font-bold mt-2">Reunited!</h2>
-                        <p className="text-green-200">
-                          This item has been returned to its owner.
-                        </p>
-                      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {/* ── Image ── */}
+            <div className="lg:col-span-2">
+              <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 aspect-[4/3]">
+                <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
+                {post.status === "Reunited" && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <div className="text-center bg-black/50 backdrop-blur-sm border border-white/10 rounded-2xl px-8 py-6">
+                      <CheckCircle className="h-14 w-14 mx-auto text-emerald-400 mb-2" />
+                      <h2 className="text-2xl font-bold text-white">Reunited!</h2>
+                      <p className="text-emerald-300/80 text-sm mt-1">This item has been returned to its owner.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── Post info ── */}
+            <div className="flex flex-col gap-4">
+
+              {/* Status + Title card */}
+              <div className="rounded-2xl border border-white/8 bg-white/3 p-6">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex-1 min-w-0">
+                    <span className={`inline-block rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wider mb-3 ${
+                      post.status === "Lost"
+                        ? "bg-red-500/10 text-red-400 border border-red-500/15"
+                        : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/15"
+                    }`}>
+                      {post.status}
+                    </span>
+                    {isEditing ? (
+                      <input
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        className={`${editInputClass} text-lg font-bold`}
+                      />
+                    ) : (
+                      <h1 className="text-xl font-bold text-white leading-tight">{post.title}</h1>
+                    )}
+                  </div>
+
+                  {isOwnPost && !isEditing && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-colors">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="rounded-xl border border-white/10 bg-[#0d1b2e] text-white shadow-xl w-44">
+                        <DropdownMenuItem onClick={startEditing} className="cursor-pointer rounded-lg text-white/70 hover:text-white hover:bg-white/8 focus:bg-white/8 focus:text-white">
+                          <Pencil className="mr-2 h-4 w-4" /> Edit Post
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-white/8" />
+                        <DropdownMenuItem
+                          onClick={() => setShowDeleteConfirm(true)}
+                          className="cursor-pointer rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-300"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete Post
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+
+                  {isEditing && (
+                    <div className="flex gap-2 shrink-0">
+                      <button onClick={handleSaveEdit} className="rounded-lg bg-sky-500 hover:bg-sky-400 px-3 py-1.5 text-xs font-semibold text-white transition-colors">Save</button>
+                      <button onClick={() => setIsEditing(false)} className="rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/60 hover:text-white transition-colors">Cancel</button>
                     </div>
                   )}
                 </div>
-              </Card>
-            </div>
 
-            {/* Post Info */}
-            <div className="space-y-6">
-              <Card className="glass-panel rounded-2xl">
-                <CardContent className="p-6 space-y-5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <Badge
-                        className={cn(
-                          "text-xs py-1 px-3 rounded-md font-semibold uppercase tracking-wider border-none",
-                          post.status === "Lost"
-                            ? "bg-red-500/10 text-red-500"
-                            : "bg-green-500/10 text-green-500"
-                        )}
-                      >
-                        {post.status}
-                      </Badge>
-                      {isEditing ? (
-                        <input
-                          value={editTitle}
-                          onChange={(e) => setEditTitle(e.target.value)}
-                          className="text-3xl font-bold lg:text-4xl mt-3 font-headline bg-transparent border-b-2 border-primary focus:outline-none w-full text-foreground"
-                        />
-                      ) : (
-                        <h1 className="text-3xl font-bold lg:text-4xl mt-3 font-headline">
-                          {post.title}
-                        </h1>
-                      )}
-                    </div>
-
-                    {/* Author Actions: Edit/Delete */}
-                    {isOwnPost && !isEditing && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="rounded-md hover:bg-secondary shrink-0">
-                            <MoreHorizontal className="h-5 w-5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-md border-border bg-popover">
-                          <DropdownMenuItem onClick={startEditing} className="cursor-pointer">
-                            <Pencil className="mr-2 h-4 w-4" /> Edit Post
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => setShowDeleteConfirm(true)}
-                            className="cursor-pointer text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete Post
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-
-                    {isEditing && (
-                      <div className="flex gap-2 shrink-0">
-                        <Button size="sm" onClick={handleSaveEdit} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">Save</Button>
-                        <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="rounded-md hover:bg-secondary">Cancel</Button>
+                <div className="space-y-3.5">
+                  {[
+                    { icon: MapPin, label: "Location", value: editLocation, setter: setEditLocation, editable: true },
+                    { icon: Calendar, label: "Date", value: post.date, editable: false },
+                    { icon: Tag, label: "Category", value: post.category, editable: false },
+                  ].map((row, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 border border-sky-500/15">
+                        <row.icon className="h-3.5 w-3.5 text-sky-400" />
                       </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-4 text-base">
-                    <div className="flex items-start gap-4">
-                      <MapPin className="h-6 w-6 mt-1 text-primary" />
-                      <div className="flex-1">
-                        <p className="font-semibold">Location</p>
-                        {isEditing ? (
-                          <input
-                            value={editLocation}
-                            onChange={(e) => setEditLocation(e.target.value)}
-                            className="text-muted-foreground bg-transparent border-b border-primary focus:outline-none w-full"
-                          />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-0.5">{row.label}</p>
+                        {isEditing && row.editable ? (
+                          <input value={row.value} onChange={(e) => row.setter(e.target.value)} className={editInputClass} />
                         ) : (
-                          <p className="text-muted-foreground">{post.location}</p>
+                          <p className="text-sm text-white/70 truncate">{i === 0 ? post.location : row.value}</p>
                         )}
                       </div>
                     </div>
+                  ))}
+                </div>
+              </div>
 
-                    <div className="flex items-start gap-4">
-                      <Calendar className="h-6 w-6 mt-1 text-primary" />
-                      <div>
-                        <p className="font-semibold">Date</p>
-                        <p className="text-muted-foreground">{post.date}</p>
-                      </div>
+              {/* Poster card */}
+              <div className="rounded-2xl border border-white/8 bg-white/3 p-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-4">Posted by</p>
+                {!isOwnPost ? (
+                  <Link to={`/profile/${post.poster._id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <Avatar className="h-10 w-10 ring-1 ring-white/10">
+                      <AvatarImage src={post.poster.imageUrl} className="object-cover" />
+                      <AvatarFallback className="bg-sky-500/20 text-sky-400 text-sm font-bold">
+                        {post.poster.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{post.poster.name}</p>
+                      <p className="text-xs text-white/30">View profile →</p>
                     </div>
-
-                    <div className="flex items-start gap-4">
-                      <Tag className="h-6 w-6 mt-1 text-primary" />
-                      <div>
-                        <p className="font-semibold">Category</p>
-                        <p className="text-muted-foreground">{post.category}</p>
-                      </div>
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={post.poster.imageUrl} className="object-cover" />
+                      <AvatarFallback className="bg-sky-500/20 text-sky-400 text-sm font-bold">
+                        {post.poster.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-semibold text-white">You</p>
+                      <p className="text-xs text-white/30">Your post</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Poster - Conditional Link and Display */}
-              <Card className="glass-panel rounded-2xl">
-                <CardContent className="p-6">
-                  {!isOwnPost ? (
-                    <Link to={`/profile/${post.poster._id}`}>
-                      <div className="flex items-center gap-4 hover:opacity-80 transition-opacity cursor-pointer">
-                        <Avatar className="w-12 h-12 ring-2 ring-primary/10">
-                          <AvatarImage
-                            src={post.poster.imageUrl}
-                            className="object-cover"
-                            alt={post.poster.name}
-                          />
-                          <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                            {post.poster.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-semibold">{post.poster.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Poster
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  ) : (
-                    <div className="flex items-center gap-4">
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage
-                          src={post.poster.imageUrl}
-                          className="object-cover"
-                          alt="You"
-                        />
-                        <AvatarFallback>
-                          {post.poster.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold text-lg">You</p>
-                        <p className="text-sm text-muted-foreground">Poster</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                )}
+              </div>
             </div>
 
-            {/* Description & Comments */}
-            <div className="md:col-span-2 lg:col-span-3 space-y-8">
-              {/* Description */}
-              <Card className="glass-panel rounded-2xl">
-                <CardContent className="p-6 space-y-4">
-                  <h2 className="text-2xl font-bold font-headline">Description</h2>
-                  {isEditing ? (
-                    <textarea
-                      value={editDescription}
-                      onChange={(e) => setEditDescription(e.target.value)}
-                      className="text-base leading-relaxed text-foreground w-full min-h-[120px] bg-secondary/30 border border-border rounded-xl p-3 focus:outline-none focus:border-primary"
-                    />
-                  ) : (
-                    <p className="text-base leading-relaxed text-muted-foreground">
-                      {post.description}
-                    </p>
-                  )}
+            {/* ── Description + Comments ── */}
+            <div className="md:col-span-2 lg:col-span-3 space-y-5">
 
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {(Array.isArray(post.tags)
-                      ? post.tags.join(",").split(",")
-                      : post.tags.split(",")
-                    ).map((tag, index) => (
-                      <span
-                        key={`${tag}-${index}`}
-                        className="bg-primary/10 text-primary text-xs font-medium px-3 py-1 rounded-md"
-                      >
+              {/* Description */}
+              <div className="rounded-2xl border border-white/8 bg-white/3 p-6">
+                <h2 className="text-lg font-bold text-white mb-4">Description</h2>
+                {isEditing ? (
+                  <textarea
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    className={`${editInputClass} min-h-[120px] resize-none`}
+                  />
+                ) : (
+                  <p className="text-sm text-white/60 leading-relaxed">{post.description}</p>
+                )}
+                {post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {(Array.isArray(post.tags) ? post.tags.join(",").split(",") : post.tags.split(",")).map((tag, i) => (
+                      <span key={i} className="rounded-md bg-sky-500/10 border border-sky-500/15 px-3 py-1 text-xs font-medium text-sky-400">
                         {tag.trim()}
                       </span>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
+                )}
+              </div>
 
-              {/* Comments Only */}
-              <Card className="glass-panel rounded-2xl">
-                <CardContent className="p-6 space-y-6">
-                  <h2 className="text-2xl font-bold flex items-center gap-3 font-headline">
-                    <MessageSquare className="h-6 w-6 text-primary" />
-                    Community Comments
-                  </h2>
+              {/* Comments */}
+              <div className="rounded-2xl border border-white/8 bg-white/3 p-6">
+                <h2 className="flex items-center gap-2 text-lg font-bold text-white mb-6">
+                  <MessageSquare className="h-5 w-5 text-sky-400" />
+                  Community Comments
+                </h2>
+                <CommentBox />
+              </div>
 
-                  {/* Only CommentBox kept */}
-                  <CommentBox />
-
-                  <Separator className="my-6" />
-                </CardContent>
-              </Card>
             </div>
           </div>
         </div>
@@ -380,37 +294,32 @@ export default function PostDetails() {
 
       <Footer />
 
-      {/* Delete Confirmation Overlay */}
+      {/* Delete confirm overlay */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4">
-          <div className="glass-panel rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center space-y-5">
-            <div className="w-14 h-14 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
-              <AlertTriangle className="h-7 w-7 text-destructive" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0d1b2e] p-8 text-center shadow-2xl">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10">
+              <AlertTriangle className="h-6 w-6 text-red-400" />
             </div>
-            <h3 className="text-xl font-bold font-headline text-foreground">Delete Post?</h3>
-            <p className="text-sm text-muted-foreground">
-              This action cannot be undone. This will permanently delete your post and all associated comments.
+            <h3 className="text-xl font-bold text-white mb-2">Delete Post?</h3>
+            <p className="text-sm text-white/40 mb-7">
+              This action cannot be undone. The post and all comments will be permanently deleted.
             </p>
-            <div className="flex gap-3 justify-center">
-              <Button
-                variant="outline"
-                className="rounded-md hover:bg-secondary transition-colors"
+            <div className="flex gap-3">
+              <button
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isDeleting}
+                className="flex-1 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 py-2.5 text-sm font-semibold text-white/60 hover:text-white transition-colors"
               >
                 Cancel
-              </Button>
-              <Button
-                className="rounded-md bg-destructive hover:bg-destructive/90 text-destructive-foreground transition-colors"
+              </button>
+              <button
                 onClick={handleDeletePost}
                 disabled={isDeleting}
+                className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-red-500 hover:bg-red-400 disabled:opacity-50 py-2.5 text-sm font-semibold text-white transition-colors"
               >
-                {isDeleting ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Deleting...</>
-                ) : (
-                  <><Trash2 className="h-4 w-4 mr-2" /> Delete Post</>
-                )}
-              </Button>
+                {isDeleting ? <><Loader2 className="h-4 w-4 animate-spin" /> Deleting...</> : <><Trash2 className="h-4 w-4" /> Delete</>}
+              </button>
             </div>
           </div>
         </div>
