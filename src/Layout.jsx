@@ -12,7 +12,7 @@ import CreatePost from "./pages/CreatePost";
 import ProfilePage from "./pages/Profile";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Settings from "./pages/Settings";
+
 import NotFound from "./pages/NotFound";
 import UserProfilePage from "./pages/UserProfile"; // ✅ renamed import to match
 import ChatPage from "./pages/ChatPage";
@@ -65,14 +65,7 @@ export default function Layout() {
             }
           />
 
-          <Route
-            path="/settings"
-            element={
-              <AuthGuard>
-                <Settings />
-              </AuthGuard>
-            }
-          />
+          
           <Route
             path="/chat"
             element={
