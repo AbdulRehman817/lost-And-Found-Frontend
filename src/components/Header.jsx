@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useUser, useClerk, useAuth } from "@clerk/clerk-react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { ThemeToggle } from "./theme-toggle";
+
 import UnifiedNotifications from "./UnifiedNotifications";
 import { io } from "socket.io-client";
 
@@ -111,7 +111,7 @@ export function Header() {
             Report an Item
           </Link>
 
-          <ThemeToggle />
+       
 
           {/* Chat */}
           <button
