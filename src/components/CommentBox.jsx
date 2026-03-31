@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { MessageCircle, Send, Reply, Ban } from "lucide-react";
+import { MessageCircle, Send, Reply, Ban, Loader2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export default function CommentBox() {
   const { id } = useParams();
@@ -17,128 +15,71 @@ export default function CommentBox() {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [postAuthorId, setPostAuthorId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch post details to get author ID
   const fetchPostAuthor = async () => {
     try {
       const token = await getToken();
-      const response = await axios.get(
+      const res = await axios.get(
         `https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/posts/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPostAuthorId(
-        response.data.post?.userId?._id || response.data.post?.userId
-      );
-    } catch (error) {
-      console.error("Error fetching post author:", error);
-    }
+      setPostAuthorId(res.data.post?.userId?._id || res.data.post?.userId);
+    } catch (e) { console.error(e); }
   };
 
   const fetchComments = async () => {
+    setLoading(true);
     try {
       const token = await getToken();
-      const response = await axios.get(
+      const res = await axios.get(
         `https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/posts/${id}/comments`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      const comments = response.data.comments;
-      setComments(comments);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-    }
+      setComments(res.data.comments);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
-  // Check if current user is the post author
   const isPostAuthor = user?.id === postAuthorId;
 
-  // Add new comment (top-level)
   const handlePostComment = async () => {
     if (!newComment.trim() || isPostAuthor) return;
-
     try {
       const token = await getToken();
-      const response = await axios.post(
+      const res = await axios.post(
         `https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/posts/${id}/comments`,
-        {
-          message: newComment,
-          parentId: null,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { message: newComment, parentId: null },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      if (response.data.success) {
-        const comment = response.data.data;
-        const normalizedComment = { ...comment, replies: [] };
-        setComments((prev) => [normalizedComment, ...prev]);
+      if (res.data.success) {
+        setComments((prev) => [{ ...res.data.data, replies: [] }, ...prev]);
         setNewComment("");
       }
-    } catch (error) {
-      console.error("Error posting comment:", error.response?.data || error);
-    }
+    } catch (e) { console.error(e); }
   };
 
-  // Add reply to comment (post author CAN reply to others' comments)
   const handlePostReply = async (parentCommentId) => {
     if (!replyText.trim()) return;
-
     try {
       const token = await getToken();
-      const response = await axios.post(
+      const res = await axios.post(
         `https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/posts/${id}/comments`,
-        {
-          message: replyText,
-          parentId: parentCommentId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { message: replyText, parentId: parentCommentId },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      if (response.data.success) {
-        const reply = response.data.data;
+      if (res.data.success) {
         setComments((prev) =>
-          prev.map((comment) => {
-            if (comment._id === parentCommentId) {
-              return {
-                ...comment,
-                replies: [...(comment.replies || []), reply],
-              };
-            }
-            return comment;
-          })
+          prev.map((c) =>
+            c._id === parentCommentId
+              ? { ...c, replies: [...(c.replies || []), res.data.data] }
+              : c
+          )
         );
         setReplyText("");
         setReplyingTo(null);
       }
-    } catch (error) {
-      console.error("Error posting reply:", error.response?.data || error);
-    }
-  };
-
-  // Show reply box
-  const showReplyBox = (commentId) => {
-    setReplyingTo(commentId);
-    setReplyText("");
-  };
-
-  // Hide reply box
-  const hideReplyBox = () => {
-    setReplyingTo(null);
-    setReplyText("");
+    } catch (e) { console.error(e); }
   };
 
   useEffect(() => {
@@ -146,134 +87,94 @@ export default function CommentBox() {
     fetchComments();
   }, [id]);
 
+  const formatDate = (d) =>
+    d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Just now";
+
+  const inputClass = "w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/25 focus:border-sky-500/50 focus:outline-none focus:ring-1 focus:ring-sky-500/20 transition-colors";
+
   return (
-    <div className="mt-8 bg-background">
-      {/* Header */}
-      <div className="border-b border-border pb-4 mb-6">
-        <h3 className="text-xl font-semibold text-foreground flex items-center gap-2.5 font-headline">
-          <div className="w-8 h-8 rounded-md bg-secondary flex items-center justify-center">
-            <MessageCircle className="w-4 h-4 text-foreground" />
-          </div>
-          Comments ({comments.length})
-        </h3>
+    <div>
+      {/* Comment count */}
+      <div className="flex items-center gap-2 mb-6">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10 border border-sky-500/15">
+          <MessageCircle className="h-4 w-4 text-sky-400" />
+        </div>
+        <span className="text-sm font-semibold text-white/60">
+          {comments.length} comment{comments.length !== 1 ? "s" : ""}
+        </span>
       </div>
 
-      {/* Comments List */}
-      <div className="space-y-5 mb-8">
-        {comments.length > 0 ? (
-          comments.map((comment, index) => (
-            <div
-              key={comment._id}
-              className={`group ${
-                index !== comments.length - 1
-                  ? "border-b border-border/50 pb-5"
-                  : ""
-              }`}
-            >
-              {/* Main Comment */}
-              <div className="flex gap-4">
-                <div className="flex-shrink-0">
-                  <Avatar className="w-10 h-10 border border-border">
-                    <AvatarImage
-                      src={comment.userId?.profileImage || ""}
-                      className="object-cover"
-                      alt={comment.userId?.name || "User"}
-                    />
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {comment.userId?.name?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-
+      {/* Comments list */}
+      {loading ? (
+        <div className="flex items-center justify-center py-10">
+          <Loader2 className="h-6 w-6 animate-spin text-sky-400" />
+        </div>
+      ) : comments.length > 0 ? (
+        <div className="space-y-4 mb-6">
+          {comments.map((comment, i) => (
+            <div key={comment._id} className="group">
+              {/* Comment */}
+              <div className="flex gap-3">
+                <Avatar className="h-8 w-8 shrink-0 ring-1 ring-white/10">
+                  <AvatarImage src={comment.userId?.profileImage} className="object-cover" />
+                  <AvatarFallback className="bg-sky-500/20 text-sky-400 text-xs font-bold">
+                    {comment.userId?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1 min-w-0">
-                  {/* Comment header */}
-                  <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-semibold text-foreground text-sm">
-                      {comment.userId?.name || "Anonymous User"}
-                    </h4>
-                    <span className="w-1 h-1 bg-muted-foreground/40 rounded-full"></span>
-                    <time className="text-xs text-muted-foreground">
-                      {comment.createdAt
-                        ? new Date(comment.createdAt).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }
-                          )
-                        : "Just now"}
-                    </time>
+                  <div className="rounded-xl rounded-tl-sm border border-white/8 bg-white/3 px-4 py-3 mb-2">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-xs font-bold text-white">{comment.userId?.name || "Anonymous"}</span>
+                      <span className="text-[10px] text-white/25">{formatDate(comment.createdAt)}</span>
+                    </div>
+                    <p className="text-sm text-white/70 leading-relaxed break-words">{comment.message}</p>
                   </div>
-
-                  {/* Comment message */}
-                  <div className="bg-secondary/20 rounded-md px-4 py-3 mb-3 border border-border">
-                    <p className="text-foreground/90 text-sm leading-relaxed break-words">
-                      {comment.message}
-                    </p>
-                  </div>
-
-                  {/* Comment actions - Always show reply button for everyone */}
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 px-1">
                     <button
-                      onClick={() => showReplyBox(comment._id)}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors duration-200 opacity-0 group-hover:opacity-100"
+                      onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
+                      className="flex items-center gap-1 text-xs font-semibold text-white/30 hover:text-sky-400 transition-colors"
                     >
-                      <Reply className="w-3.5 h-3.5" />
-                      Reply
+                      <Reply className="h-3 w-3" /> Reply
                     </button>
-                    {comment.replies && comment.replies.length > 0 && (
-                      <span className="text-xs text-muted-foreground">
-                        {comment.replies.length}{" "}
-                        {comment.replies.length === 1 ? "reply" : "replies"}
-                      </span>
+                    {comment.replies?.length > 0 && (
+                      <span className="text-xs text-white/20">{comment.replies.length} {comment.replies.length === 1 ? "reply" : "replies"}</span>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Reply Box - Anyone can reply to comments */}
+              {/* Reply box */}
               {replyingTo === comment._id && (
-                <div className="mt-4 ml-14">
-                  <div className="bg-card rounded-md p-4 border border-border shadow-sm">
-                    <div className="flex gap-3">
-                      <Avatar className="w-8 h-8 flex-shrink-0">
-                        <AvatarImage
-                          src={user?.imageUrl || ""}
-                          alt={user?.fullName || "You"}
-                          className="object-cover"
-                        />
-                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                          {user?.firstName?.charAt(0)?.toUpperCase() || "Y"}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div className="flex-1 space-y-3">
-                        <Input
-                          placeholder="Write a thoughtful reply..."
-                          value={replyText}
-                          onChange={(e) => setReplyText(e.target.value)}
-                          className="bg-background border-border focus:border-primary text-foreground placeholder-muted-foreground text-sm"
-                        />
-
-                        <div className="flex items-center gap-2">
-                          <Button
-                            onClick={() => handlePostReply(comment._id)}
-                            size="sm"
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-1.5 text-xs font-medium rounded-md transition-colors"
-                          >
-                            Post Reply
-                          </Button>
-                          <Button
-                            onClick={hideReplyBox}
-                            size="sm"
-                            variant="ghost"
-                            className="text-muted-foreground hover:bg-secondary px-4 py-1.5 text-xs rounded-md transition-colors"
-                          >
-                            Cancel
-                          </Button>
-                        </div>
+                <div className="mt-3 ml-11">
+                  <div className="flex gap-2">
+                    <Avatar className="h-7 w-7 shrink-0 ring-1 ring-white/10">
+                      <AvatarImage src={user?.imageUrl} className="object-cover" />
+                      <AvatarFallback className="bg-sky-500/20 text-sky-400 text-xs font-bold">
+                        {user?.firstName?.charAt(0)?.toUpperCase() || "Y"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-2">
+                      <input
+                        className={inputClass}
+                        placeholder="Write a reply..."
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handlePostReply(comment._id)}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handlePostReply(comment._id)}
+                          disabled={!replyText.trim()}
+                          className="rounded-lg bg-sky-500 hover:bg-sky-400 disabled:opacity-40 px-4 py-1.5 text-xs font-semibold text-white transition-colors"
+                        >
+                          Reply
+                        </button>
+                        <button
+                          onClick={() => { setReplyingTo(null); setReplyText(""); }}
+                          className="rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-1.5 text-xs font-semibold text-white/50 hover:text-white transition-colors"
+                        >
+                          Cancel
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -281,49 +182,23 @@ export default function CommentBox() {
               )}
 
               {/* Replies */}
-              {comment.replies && comment.replies.length > 0 && (
-                <div className="mt-4 ml-14 space-y-4">
+              {comment.replies?.length > 0 && (
+                <div className="mt-3 ml-11 space-y-3">
                   {comment.replies.map((reply) => (
                     <div key={reply._id} className="flex gap-3">
-                      <div className="flex-shrink-0">
-                        <Avatar className="w-8 h-8 border border-border">
-                          <AvatarImage
-                            src={reply.userId?.profileImage || ""}
-                            alt={reply.userId?.name || "User"}
-                            className="object-cover"
-                          />
-                          <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                            {reply.userId?.name?.charAt(0)?.toUpperCase() ||
-                              "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-
+                      <Avatar className="h-7 w-7 shrink-0 ring-1 ring-white/10">
+                        <AvatarImage src={reply.userId?.profileImage} className="object-cover" />
+                        <AvatarFallback className="bg-sky-500/20 text-sky-400 text-xs font-bold">
+                          {reply.userId?.name?.charAt(0)?.toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h5 className="font-medium text-foreground text-sm">
-                            {reply.userId?.name || "Anonymous User"}
-                          </h5>
-                          <span className="w-1 h-1 bg-muted-foreground/40 rounded-full"></span>
-                          <time className="text-xs text-muted-foreground">
-                            {reply.createdAt
-                              ? new Date(reply.createdAt).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    month: "short",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )
-                              : "Just now"}
-                          </time>
-                        </div>
-
-                        <div className="bg-secondary/10 rounded-md px-3 py-2 border border-border">
-                          <p className="text-foreground/80 text-sm leading-relaxed break-words">
-                            {reply.message}
-                          </p>
+                        <div className="rounded-xl rounded-tl-sm border border-white/8 bg-white/3 px-3 py-2.5">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-bold text-white">{reply.userId?.name || "Anonymous"}</span>
+                            <span className="text-[10px] text-white/25">{formatDate(reply.createdAt)}</span>
+                          </div>
+                          <p className="text-xs text-white/60 leading-relaxed break-words">{reply.message}</p>
                         </div>
                       </div>
                     </div>
@@ -331,74 +206,59 @@ export default function CommentBox() {
                 </div>
               )}
             </div>
-          ))
-        ) : (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-md bg-secondary flex items-center justify-center border border-border">
-              <MessageCircle className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h4 className="text-foreground font-medium mb-1">No comments yet</h4>
-            <p className="text-sm text-muted-foreground">
-              Be the first to share your thoughts!
-            </p>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-12 mb-6 rounded-xl border border-dashed border-white/10">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5">
+            <MessageCircle className="h-5 w-5 text-white/25" />
           </div>
-        )}
-      </div>
+          <p className="text-sm font-semibold text-white/50">No comments yet</p>
+          <p className="text-xs text-white/25 mt-1">Be the first to share your thoughts</p>
+        </div>
+      )}
 
-      {/* Add Comment - Only show if NOT post author */}
-      {!isPostAuthor ? (
-        <div className="border-t border-border pt-6">
-          <div className="flex gap-4">
-            <div className="flex-shrink-0">
-              <Avatar className="w-10 h-10 border border-border">
-                <AvatarImage
-                  src={user?.imageUrl || ""}
-                  alt={user?.fullName || "You"}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                  {user?.firstName?.charAt(0)?.toUpperCase() || "Y"}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-
-            <div className="flex-1 space-y-3">
-              <Input
+      {/* Add comment / blocked */}
+      <div className="border-t border-white/8 pt-5">
+        {!isPostAuthor ? (
+          <div className="flex gap-3">
+            <Avatar className="h-8 w-8 shrink-0 ring-1 ring-white/10">
+              <AvatarImage src={user?.imageUrl} className="object-cover" />
+              <AvatarFallback className="bg-sky-500/20 text-sky-400 text-xs font-bold">
+                {user?.firstName?.charAt(0)?.toUpperCase() || "Y"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-2">
+              <input
+                className={inputClass}
                 placeholder="Share your thoughts..."
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handlePostComment()}
-                className="bg-transparent border-border focus:border-primary text-foreground placeholder-muted-foreground py-3 px-4 text-sm rounded-md"
               />
-
               <div className="flex justify-end">
-                <Button
+                <button
                   onClick={handlePostComment}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 text-sm font-medium transition-colors rounded-md"
                   disabled={!newComment.trim()}
+                  className="flex items-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed px-5 py-2 text-xs font-semibold text-white transition-colors"
                 >
-                  <Send className="w-4 h-4 mr-2" />
-                  Post Comment
-                </Button>
+                  <Send className="h-3.5 w-3.5" /> Post Comment
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="border-t border-border pt-6">
-          <div className="bg-card rounded-md p-6 text-center border border-border shadow-sm">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-md bg-secondary flex items-center justify-center border border-border">
-              <Ban className="w-6 h-6 text-muted-foreground" />
+        ) : (
+          <div className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/3 px-5 py-4">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
+              <Ban className="h-4 w-4 text-white/30" />
             </div>
-            <h4 className="text-foreground font-medium mb-1">
-              You cannot comment on your own post
-            </h4>
-            <p className="text-sm text-muted-foreground">
-              However, you can reply to other users' comments below
-            </p>
+            <div>
+              <p className="text-sm font-semibold text-white/60">You cannot comment on your own post</p>
+              <p className="text-xs text-white/30 mt-0.5">You can still reply to others' comments above</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

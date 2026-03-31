@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "./ui/button";
-import { X, Users, Inbox } from "lucide-react";
+import { X, Users, Inbox, Loader2 } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
 
@@ -14,13 +13,10 @@ export default function RequestsList() {
 
   useEffect(() => {
     const stored = localStorage.getItem("dismissedNotifications");
-    if (stored) {
-      setDismissedIds(JSON.parse(stored));
-    }
+    if (stored) setDismissedIds(JSON.parse(stored));
     fetchAcceptedRequests();
   }, []);
 
-  // ✅ Fetch accepted requests
   const fetchAcceptedRequests = async () => {
     try {
       const token = await getToken();
@@ -28,120 +24,79 @@ export default function RequestsList() {
         "https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/connections/getAcceptedRequests",
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      const allRequests = res.data.data || [];
-
-      // Filter out dismissed notifications
+      const all = res.data.data || [];
       const stored = localStorage.getItem("dismissedNotifications");
       const dismissed = stored ? JSON.parse(stored) : [];
-      const filtered = allRequests.filter(
-        (req) => !dismissed.includes(req._id)
-      );
-
-      setAcceptedRequests(filtered);
-    } catch (error) {
-      console.error("❌ Error fetching accepted requests:", error);
-    } finally {
-      setLoading(false);
-    }
+      setAcceptedRequests(all.filter((r) => !dismissed.includes(r._id)));
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
-  // ✅ Discard notification (saves to localStorage)
   const handleDiscard = (notificationId) => {
-    // Update state
-    setAcceptedRequests((prevRequests) =>
-      prevRequests.filter((req) => req._id !== notificationId)
-    );
-
-    // Save to localStorage
-    const newDismissedIds = [...dismissedIds, notificationId];
-    setDismissedIds(newDismissedIds);
-    localStorage.setItem(
-      "dismissedNotifications",
-      JSON.stringify(newDismissedIds)
-    );
+    setAcceptedRequests((prev) => prev.filter((r) => r._id !== notificationId));
+    const updated = [...dismissedIds, notificationId];
+    setDismissedIds(updated);
+    localStorage.setItem("dismissedNotifications", JSON.stringify(updated));
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-card border border-border shadow-sm rounded-xl">
-      {/* Header Section */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-primary rounded-md">
-            <Users className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold">Connection Notifications</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {acceptedRequests.length} notification
-              {acceptedRequests.length !== 1 ? "s" : ""}
-            </p>
-          </div>
+    <div>
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-500/20 bg-sky-500/10">
+          <Users className="h-4 w-4 text-sky-400" />
+        </div>
+        <div>
+          <h3 className="text-base font-bold text-white">Connection Notifications</h3>
+          <p className="text-xs text-white/30">
+            {acceptedRequests.length} notification{acceptedRequests.length !== 1 ? "s" : ""}
+          </p>
         </div>
       </div>
 
-      {/* Connections List */}
+      {/* List */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent"></div>
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-7 w-7 animate-spin text-sky-400" />
         </div>
       ) : acceptedRequests.length === 0 ? (
-        <div className="text-center py-12 border-2 border-dashed rounded-lg bg-card">
-          <div className="inline-flex p-4 bg-secondary rounded-md mb-4 border border-border">
-            <Inbox className="w-10 h-10 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center py-16 rounded-xl shadow-lg border border-dashed border-white/20">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5">
+            <Inbox className="h-6 w-6 text-white/25" />
           </div>
-          <h3 className="text-lg font-semibold mb-2">No notifications</h3>
-          <p className="text-muted-foreground text-sm">
-            You're all caught up! New connection notifications will appear here.
-          </p>
+          <p className="text-sm font-semibold text-white/50">No notifications</p>
+          <p className="text-xs text-white/25 mt-1">New connection updates will appear here.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {acceptedRequests.map((req) => (
             <div
               key={req._id}
-              className="bg-card border border-border rounded-md p-4 hover:border-primary/50 transition-colors shadow-sm"
+              className="flex items-center gap-4 rounded-xl border border-white/8 bg-white/3 p-4 hover:border-white/15 hover:bg-white/5 transition-colors"
             >
-              <div className="flex items-start gap-4">
-                {/* Avatar */}
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-md bg-secondary border border-border flex items-center justify-center text-foreground font-semibold">
-                    {(req.requesterId?.name || "U")[0].toUpperCase()}
-                  </div>
-                </div>
+              {/* Avatar initials */}
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-sky-500/20 bg-sky-500/10 text-sm font-bold text-sky-400">
+                {(req.requesterId?.name || "U")[0].toUpperCase()}
+              </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-lg truncate">
-                        {req.requesterId?.name || "Unknown User"}
-                      </h3>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {req.requesterId?.email || "No email"}
-                      </p>
-                    </div>
-
-                    {/* Discard Button */}
-                    <Button
-                      onClick={() => handleDiscard(req._id)}
-                      variant="ghost"
-                      size="sm"
-                      className="flex-shrink-0 h-8 w-8 p-0 hover:bg-red-500/10 hover:text-red-500 rounded-md transition-colors"
-                      title="Dismiss notification"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-md">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                      Connection accepted
-                    </span>
-                  </div>
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">{req.requesterId?.name || "Unknown User"}</p>
+                <p className="text-xs text-white/30 truncate">{req.requesterId?.email || ""}</p>
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-emerald-500/15 bg-emerald-500/8 px-2.5 py-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] font-semibold text-emerald-400">Connection accepted</span>
                 </div>
               </div>
+
+              {/* Dismiss */}
+              <button
+                onClick={() => handleDiscard(req._id)}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/8 bg-white/5 text-white/30 hover:text-red-400 hover:border-red-500/20 hover:bg-red-500/10 transition-colors"
+                title="Dismiss"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           ))}
         </div>

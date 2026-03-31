@@ -1,10 +1,8 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
-import { Button } from "../components/ui/button";
-import { Lock, Mail, Phone, FileText } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Lock, Mail, Phone, FileText, Loader2, UserPlus, MessageCircle, X } from "lucide-react";
 import { Header } from "../components/Header";
 
 export default function UserProfilePage() {
@@ -15,52 +13,39 @@ export default function UserProfilePage() {
   const { getToken } = useAuth();
   const navigate = useNavigate();
 
-  // Connection state
   const [isConnected, setIsConnected] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [amRequester, setAmRequester] = useState(false);
   const [connectionCounts, setConnectionCounts] = useState(null);
-
-  // Modal and message
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchConnectionCounts = async () => {
       if (!userId) return;
-
       try {
         const token = await getToken();
-        const headers = { Authorization: `Bearer ${token}` };
-
         const res = await axios.get(
           `https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/connection-counts/${userId}`,
-          { headers }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-
         setConnectionCounts(res.data.data);
-      } catch (err) {
-        console.error("Error fetching connection counts:", err);
-      }
+      } catch (e) { console.error(e); }
     };
-
     fetchConnectionCounts();
   }, [userId]);
 
-  // Fetch connection status
   const fetchConnectionStatus = async (userMongoId) => {
     try {
       const token = await getToken();
-      const statusRes = await axios.get(
+      const res = await axios.get(
         `https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/connections/status/${userMongoId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setIsConnected(statusRes.data.isConnected);
-      setIsPending(statusRes.data.isPending);
-      setAmRequester(statusRes.data.amRequester);
-    } catch (err) {
-      console.error("Error fetching connection status:", err);
-    }
+      setIsConnected(res.data.isConnected);
+      setIsPending(res.data.isPending);
+      setAmRequester(res.data.amRequester);
+    } catch (e) { console.error(e); }
   };
 
   useEffect(() => {
@@ -68,76 +53,46 @@ export default function UserProfilePage() {
       try {
         setLoading(true);
         const token = await getToken();
-        const headers = { Authorization: `Bearer ${token}` };
-
-        // Fetch user data
-        const userRes = await axios.get(
+        const res = await axios.get(
           `https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/profile/${userId}`,
-          { headers }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log("userData", userRes.data.user);
-        setUser(userRes.data.user);
-
-        // Fetch connection status first
-        await fetchConnectionStatus(userRes.data.user._id);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      } finally {
-        setLoading(false);
-      }
+        setUser(res.data.user);
+        await fetchConnectionStatus(res.data.user._id);
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
     };
-
     fetchData();
-  }, [userId, getToken]);
+  }, [userId]);
 
-  // Fetch posts only when connected
   useEffect(() => {
     const fetchPosts = async () => {
       if (!user?._id || !isConnected) return;
-
       try {
         const token = await getToken();
-        const headers = { Authorization: `Bearer ${token}` };
-
-        const postsRes = await axios.get(
+        const res = await axios.get(
           `https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/posts/${userId}`,
-          { headers }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        setPosts(postsRes.data.posts || []);
-      } catch (err) {
-        console.error("Error fetching posts:", err);
-      }
+        setPosts(res.data.posts || []);
+      } catch (e) { console.error(e); }
     };
-
     fetchPosts();
   }, [user?._id, isConnected]);
 
-  // Send connection request
   const handleSendRequest = async (msg = "") => {
     try {
       const token = await getToken();
       await axios.post(
         "https://net-dareen-abdulrehmankashif-9dc9dc64.koyeb.app/api/v1/connections/sendRequest",
-        {
-          receiverId: user._id,
-          message: msg,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { receiverId: user._id, message: msg },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      setIsPending(true);
-      setAmRequester(true);
-      setShowModal(false);
-      setMessage("");
-    } catch (err) {
-      console.error("Error sending request:", err);
-      alert("Failed to send connection request. Please try again.");
-    }
+      setIsPending(true); setAmRequester(true);
+      setShowModal(false); setMessage("");
+    } catch (e) { console.error(e); }
   };
 
-  // Cancel connection request
   const handleCancelRequest = async () => {
     try {
       const token = await getToken();
@@ -146,295 +101,243 @@ export default function UserProfilePage() {
         { receiverId: user._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      setIsPending(false);
-      setAmRequester(false);
-    } catch (err) {
-      console.error("Error cancelling request:", err);
-      alert("Failed to cancel request. Please try again.");
-    }
+      setIsPending(false); setAmRequester(false);
+    } catch (e) { console.error(e); }
   };
 
-  // Poll for connection status updates
   useEffect(() => {
     if (!user?._id || !isPending) return;
-
-    const interval = setInterval(async () => {
-      await fetchConnectionStatus(user._id);
-    }, 3000);
-
+    const interval = setInterval(() => fetchConnectionStatus(user._id), 3000);
     return () => clearInterval(interval);
   }, [user?._id, isPending]);
 
-  if (loading) {
-    return (
-      <>
-        <div className="flex justify-center items-center py-20 mx-auto ">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      </>
-    );
-  }
+  if (loading) return (
+    <div className="flex min-h-screen flex-col bg-[#0a1628]">
+      <Header />
+      <div className="flex flex-1 items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-sky-400" />
+      </div>
+    </div>
+  );
 
-  if (!user) {
-    return (
-      <>
-        <Header />
-        <div className="flex items-center justify-center min-h-screen">
-          <p className="text-xl text-red-500">User not found</p>
-        </div>
-      </>
-    );
-  }
+  if (!user) return (
+    <div className="flex min-h-screen flex-col bg-[#0a1628]">
+      <Header />
+      <div className="flex flex-1 items-center justify-center">
+        <p className="text-white/40">User not found.</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="flex flex-col min-h-screen bg-background w-full">
+    <div className="flex min-h-screen flex-col bg-[#0a1628] text-white overflow-x-hidden">
       <Header />
 
-      <div className="flex-1 w-full">
-        {/* Banner */}
-        <div className="h-52 bg-muted relative">
-          <div className="absolute bottom-[-60px] left-8">
-            <img
-              src={user.profileImage || "https://via.placeholder.com/150"}
-              alt={user.name}
-              className="w-32 h-32 rounded-full border-4 border-background shadow-xl object-cover"
-            />
-          </div>
-        </div>
+      <main className="flex-1 w-full">
+        <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 py-10 md:py-14 space-y-5">
 
-        {/* Profile Content Container */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Profile Info */}
-          <div className="mt-20 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-foreground">
-                {user.name}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">{user.email}</p>
-            </div>
+          {/* Profile card */}
+          <div className="rounded-2xl border border-white/8 bg-white/3 overflow-hidden">
+            {/* Banner */}
+            <div className="h-28 bg-sky-950/60 border-b border-white/8" />
 
-            {/* Connection buttons */}
-            <div className="flex gap-3 mt-6 sm:mt-0">
-              {isConnected ? (
-                <Button
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => navigate(`/chat/${user._id}`)}
-                >
-                  Message
-                </Button>
-              ) : isPending && amRequester ? (
-                <Button
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                  onClick={handleCancelRequest}
-                >
-                  Cancel Request
-                </Button>
-              ) : isPending && !amRequester ? (
-                <Button
-                  className="bg-gray-500 text-white cursor-not-allowed"
-                  disabled
-                >
-                  Request Pending
-                </Button>
-              ) : (
-                <Button
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => setShowModal(true)}
-                >
-                  Connect
-                </Button>
-              )}
-            </div>
-          </div>
+            <div className="px-6 pb-6">
+              {/* Avatar overlapping banner */}
+              <div className="flex items-end justify-between -mt-10 mb-5">
+                <img
+                  src={user.profileImage || "https://via.placeholder.com/150"}
+                  alt={user.name}
+                  className="h-20 w-20 rounded-2xl object-cover ring-4 ring-[#0a1628] border border-white/10"
+                />
 
-          {/* Bio Section - Always visible */}
-          {user.bio && (
-            <div className="mt-8">
-              <div className="bg-card border shadow-md rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <FileText className="w-5 h-5 text-muted-foreground" />
-                  <h2 className="text-xl font-semibold text-foreground">
-                    About
-                  </h2>
-                </div>
-                <p className="text-muted-foreground leading-relaxed">
-                  {user.bio}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Contact Info - Only visible if connected */}
-          {isConnected && (user.phone || user.email) && (
-            <div className="mt-6">
-              <div className="bg-card border shadow-md rounded-xl p-6">
-                <h2 className="text-xl font-semibold text-foreground mb-4">
-                  Contact Information
-                </h2>
-                <div className="space-y-3">
-                  {user.email && (
-                    <div className="flex items-center gap-3">
-                      <Mail className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Email</p>
-                        <p className="text-foreground">{user.email}</p>
-                      </div>
-                    </div>
-                  )}
-                  {user.phone && (
-                    <div className="flex items-center gap-3">
-                      <Phone className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Phone</p>
-                        <p className="text-foreground">{user.phone}</p>
-                      </div>
-                    </div>
+                {/* Action button */}
+                <div className="flex gap-2 mt-2">
+                  {isConnected ? (
+                    <button
+                      onClick={() => navigate(`/chat/${user._id}`)}
+                      className="flex items-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 px-4 py-2 text-sm font-semibold text-white transition-colors"
+                    >
+                      <MessageCircle className="h-4 w-4" /> Message
+                    </button>
+                  ) : isPending && amRequester ? (
+                    <button
+                      onClick={handleCancelRequest}
+                      className="flex items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 transition-colors"
+                    >
+                      <X className="h-4 w-4" /> Cancel Request
+                    </button>
+                  ) : isPending && !amRequester ? (
+                    <span className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/40 cursor-not-allowed">
+                      Request Pending
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => setShowModal(true)}
+                      className="flex items-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 px-4 py-2 text-sm font-semibold text-white transition-colors"
+                    >
+                      <UserPlus className="h-4 w-4" /> Connect
+                    </button>
                   )}
                 </div>
               </div>
+
+              <h1 className="text-xl font-bold text-white mb-0.5">{user.name}</h1>
+              <p className="text-sm text-white/30">{user.email}</p>
             </div>
-          )}
+          </div>
 
           {/* Stats */}
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="bg-card border shadow-md rounded-xl p-6 text-center">
-              <h3 className="text-3xl font-bold text-foreground">
-                {connectionCounts?.acceptedCount || 0}
-              </h3>
-              <p className="text-muted-foreground text-sm">Connections</p>
-            </div>
-            <div className="bg-card border shadow-md rounded-xl p-6 text-center">
-              <h3 className="text-3xl font-bold text-foreground">
-                {isConnected ? posts.length : "🔒"}
-              </h3>
-              <p className="text-muted-foreground text-sm">Posts</p>
-            </div>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label: "Connections", value: connectionCounts?.acceptedCount || 0 },
+              { label: "Posts", value: isConnected ? posts.length : "🔒" },
+            ].map((s, i) => (
+              <div key={i} className="rounded-2xl border border-white/8 bg-white/3 p-5 text-center">
+                <div className="text-2xl font-bold text-white mb-0.5">{s.value}</div>
+                <div className="text-xs font-medium text-white/30 uppercase tracking-wider">{s.label}</div>
+              </div>
+            ))}
           </div>
 
-          {/* Posts Section */}
-          <div className="mt-10 mb-12">
-            <div className="bg-card border shadow-md rounded-xl p-6">
-              <h2 className="text-2xl font-semibold text-foreground">
-                User Posts
-              </h2>
+          {/* Bio */}
+          {user.bio && (
+            <div className="rounded-2xl border border-white/8 bg-white/3 p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="h-4 w-4 text-sky-400" />
+                <h2 className="text-sm font-bold text-white/60 uppercase tracking-wider">About</h2>
+              </div>
+              <p className="text-sm text-white/50 leading-relaxed">{user.bio}</p>
+            </div>
+          )}
 
-              {/* Show posts only if connected */}
-              {isConnected ? (
-                posts.length > 0 ? (
-                  <ul className="mt-4 space-y-4">
-                    {posts.map((post) => (
-                      <Link
-                        to={`/feed/${post._id}`}
-                        className="group block"
-                        key={post._id}
-                      >
-                        <li className="p-4 border rounded-lg shadow hover:shadow-md transition bg-background">
-                          {post.imageUrl && (
-                            <img
-                              src={post.imageUrl}
-                              alt={post.title}
-                              className="w-full h-48 object-cover rounded-lg mb-3"
-                            />
-                          )}
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
-                              {post.type}
-                            </span>
-                            <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded">
-                              {post.category}
-                            </span>
-                          </div>
-                          <h3 className="text-lg font-semibold text-foreground">
-                            {post.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {post.description}
-                          </p>
-                        </li>
-                      </Link>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-3 text-muted-foreground">
-                    This user hasn't created any posts yet.
-                  </p>
-                )
-              ) : (
-                // Locked state for non-connected users
-                <div className="mt-6 text-center py-12">
-                  <div className="flex justify-center mb-4">
-                    <div className="bg-muted rounded-full p-4">
-                      <Lock className="w-12 h-12 text-muted-foreground" />
+          {/* Contact — connected only */}
+          {isConnected && (user.phone || user.email) && (
+            <div className="rounded-2xl border border-white/8 bg-white/3 p-6">
+              <h2 className="text-sm font-bold text-white/60 uppercase tracking-wider mb-4">Contact</h2>
+              <div className="space-y-3">
+                {user.email && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10 border border-sky-500/15">
+                      <Mail className="h-3.5 w-3.5 text-sky-400" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/25">Email</p>
+                      <p className="text-sm text-white/70">{user.email}</p>
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Posts are Private
-                  </h3>
-                  <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-                    Connect with {user.name} to view their posts and activity.
-                  </p>
-
-                  {isPending && amRequester ? (
-                    <p className="text-sm text-yellow-600 dark:text-yellow-500">
-                      Your connection request is pending...
-                    </p>
-                  ) : isPending && !amRequester ? (
-                    <p className="text-sm text-yellow-600 dark:text-yellow-500">
-                      {user.name} sent you a connection request. Check your
-                      notifications!
-                    </p>
-                  ) : (
-                    <Button
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                      onClick={() => setShowModal(true)}
-                    >
-                      Send Connection Request
-                    </Button>
-                  )}
-                </div>
-              )}
+                )}
+                {user.phone && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10 border border-sky-500/15">
+                      <Phone className="h-3.5 w-3.5 text-sky-400" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/25">Phone</p>
+                      <p className="text-sm text-white/70">{user.phone}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
+          )}
 
-      {/* Connect Modal */}
+          {/* Posts */}
+          <div className="rounded-2xl border border-white/8 bg-white/3 p-6">
+            <h2 className="text-sm font-bold text-white/60 uppercase tracking-wider mb-5">Posts</h2>
+
+            {isConnected ? (
+              posts.length > 0 ? (
+                <div className="space-y-3">
+                  {posts.map((post) => (
+                    <Link
+                      key={post._id}
+                      to={`/feed/${post._id}`}
+                      className="flex gap-4 rounded-xl border border-white/8 bg-white/3 hover:border-white/15 hover:bg-white/5 p-4 transition-colors"
+                    >
+                      {post.imageUrl && (
+                        <img
+                          src={post.imageUrl}
+                          alt={post.title}
+                          className="h-16 w-16 rounded-lg object-cover shrink-0 border border-white/10"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                            post.type === "lost"
+                              ? "bg-red-500/10 text-red-400 border border-red-500/15"
+                              : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/15"
+                          }`}>
+                            {post.type}
+                          </span>
+                          <span className="rounded px-2 py-0.5 text-[10px] font-medium border border-white/8 bg-white/5 text-white/40">
+                            {post.category}
+                          </span>
+                        </div>
+                        <p className="text-sm font-semibold text-white truncate">{post.title}</p>
+                        <p className="text-xs text-white/35 mt-0.5 line-clamp-2 leading-relaxed">{post.description}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-white/30 text-center py-8">This user hasn't posted anything yet.</p>
+              )
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5">
+                  <Lock className="h-6 w-6 text-white/25" />
+                </div>
+                <p className="font-semibold text-white/60 mb-1">Posts are Private</p>
+                <p className="text-sm text-white/30 mb-5 max-w-xs">
+                  Connect with {user.name} to view their posts and activity.
+                </p>
+                {isPending && amRequester ? (
+                  <span className="text-xs text-amber-400/70">Connection request pending...</span>
+                ) : isPending && !amRequester ? (
+                  <span className="text-xs text-amber-400/70">{user.name} sent you a request. Check your notifications!</span>
+                ) : (
+                  <button
+                    onClick={() => setShowModal(true)}
+                    className="flex items-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 px-5 py-2.5 text-sm font-semibold text-white transition-colors"
+                  >
+                    <UserPlus className="h-4 w-4" /> Send Connection Request
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+        </div>
+      </main>
+
+      {/* Connect modal */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-card border p-6 rounded-lg w-96 shadow-xl mx-4">
-            <h2 className="text-xl font-semibold mb-4 text-foreground">
-              Send Connection Request
-            </h2>
-            <p className="text-muted-foreground mb-2">
-              Send a connection request to {user.name}
-            </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0d1b2e] p-7 shadow-2xl">
+            <h2 className="text-lg font-bold text-white mb-1">Connect with {user.name}</h2>
+            <p className="text-sm text-white/40 mb-5">Add an optional message to introduce yourself.</p>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Add a message (optional)"
-              className="w-full border rounded p-2 mb-4 bg-background text-foreground border-border min-h-[100px]"
               maxLength={500}
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-sky-500/50 focus:outline-none focus:ring-1 focus:ring-sky-500/20 transition-colors min-h-[100px] resize-none mb-2"
             />
-            <p className="text-xs text-muted-foreground mb-4">
-              {message.length}/500 characters
-            </p>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowModal(false);
-                  setMessage("");
-                }}
+            <p className="text-xs text-white/20 mb-5 text-right">{message.length}/500</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowModal(false); setMessage(""); }}
+                className="flex-1 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 py-2.5 text-sm font-semibold text-white/60 hover:text-white transition-colors"
               >
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => handleSendRequest(message)}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="flex-1 rounded-lg bg-sky-500 hover:bg-sky-400 py-2.5 text-sm font-semibold text-white transition-colors"
               >
                 {message ? "Send with Message" : "Send Request"}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
